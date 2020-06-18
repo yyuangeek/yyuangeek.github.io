@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="YYUAN">
+  <meta name="keywords" content="">
+  <title>使用Kubeadm在外部OpenStack云厂商部署Kubernetes集群 - YuanTech</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css" />
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>YYUAN</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-05-29 15:17">
+      May 29, 2020 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      3.8k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      58
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p>本文档描述了如何在CentOS上使用kubeadm安装单个控制面板节点（主节点）的Kubernetes集群（ v1.15 ），然后部署到一个外部OpenStack云厂商，并且使用Cinder CSI插件将Cinder存储卷用作Kubernetes中的持久卷。</p>
+<h3 id="OpenStack的准备工作"><a href="#OpenStack的准备工作" class="headerlink" title="OpenStack的准备工作"></a>OpenStack的准备工作</h3><p>Kubernetes集群要在OpenStack VM上运行，因此让我们首先需要在OpenStack中创建一些东西。</p>
+<ul>
+<li>Kubernetes集群的项目/租户</li>
+<li>Kubernetes集群项目的用户，以查询节点信息和附加存储卷等</li>
+<li>专用网络和子网</li>
+<li>专用网络的路由器，并将其连接到公用网络以获取浮动IP</li>
+<li>所有Kubernetes 虚拟机的安全组</li>
+<li>一个虚拟机作为控制面板节点（主节点），几个虚拟机作为工作节点</li>
+</ul>
+<p>安全组将具有以下规则来打开Kubernetes的端口。</p>
+<h4 id="控制面板节点（主节点）"><a href="#控制面板节点（主节点）" class="headerlink" title="控制面板节点（主节点）"></a>控制面板节点（主节点）</h4><table>
+<thead>
+<tr>
+<th align="center">协议</th>
+<th align="center">端口号</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">TCP协议</td>
+<td align="center">6443</td>
+<td align="center">Kubernetes API Server</td>
+</tr>
+<tr>
+<td align="center">TCP协议</td>
+<td align="center">2379-2380</td>
+<td align="center">etcd server client API</td>
+</tr>
+<tr>
+<td align="center">TCP协议</td>
+<td align="center">10250</td>
+<td align="center">Kubelet API</td>
+</tr>
+<tr>
+<td align="center">TCP协议</td>
+<td align="center">10251</td>
+<td align="center">kube-scheduler</td>
+</tr>
+<tr>
+<td align="center">TCP协议</td>
+<td align="center">10252</td>
+<td align="center">kube-controller-manager</td>
+</tr>
+<tr>
+<td align="center">TCP协议</td>
+<td align="center">10255</td>
+<td align="center">只读 Kubelet API</td>
+</tr>
+</tbody></table>
+<h4 id="工作节点"><a href="#工作节点" class="headerlink" title="工作节点"></a>工作节点</h4><table>
+<thead>
+<tr>
+<th align="center">协议</th>
+<th align="center">端口号</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">TCP协议</td>
+<td align="center">10250</td>
+<td align="center">Kubelet API</td>
+</tr>
+<tr>
+<td align="center">TCP协议</td>
+<td align="center">10255</td>
+<td align="center">Read-only Kubelet API</td>
+</tr>
+<tr>
+<td align="center">TCP协议</td>
+<td align="center">30000-32767</td>
+<td align="center">NodePort Services</td>
+</tr>
+</tbody></table>
+<h4 id="控制面板节点（主节点）和工作节点上的CNI端口"><a href="#控制面板节点（主节点）和工作节点上的CNI端口" class="headerlink" title="控制面板节点（主节点）和工作节点上的CNI端口"></a>控制面板节点（主节点）和工作节点上的CNI端口</h4><table>
+<thead>
+<tr>
+<th align="center">协议</th>
+<th align="center">端口号</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">TCP协议</td>
+<td align="center">179</td>
+<td align="center">Calico BGP network</td>
+</tr>
+<tr>
+<td align="center">TCP协议</td>
+<td align="center">9099</td>
+<td align="center">Calico felix（健康检查）</td>
+</tr>
+<tr>
+<td align="center">UDP协议</td>
+<td align="center">8285</td>
+<td align="center">Flannel</td>
+</tr>
+<tr>
+<td align="center">UDP协议</td>
+<td align="center">8472</td>
+<td align="center">Flannel</td>
+</tr>
+<tr>
+<td align="center">TCP协议</td>
+<td align="center">6781-6784</td>
+<td align="center">Weave Net</td>
+</tr>
+<tr>
+<td align="center">UDP协议</td>
+<td align="center">6783-6784</td>
+<td align="center">Weave Net</td>
+</tr>
+</tbody></table>
+<p>仅在使用特定的CNI插件时才需要打开CNI特定的端口。在本指南中，我们将使用Weave Net。在安全组中仅需要打开Weave Net端口（TCP 6781-6784和UDP 6783-6784）。</p>
+<p>控制面板节点（主节点）至少需要2个内核和4GB RAM。启动虚拟机后，请验证其主机名，并确保其与Nova中的节点名相同。如果主机名不可解析，请将其添加到中/etc/hosts。</p>
+<p>例如，如果虚拟机名为master1，并且它的内部IP是192.168.1.4。将其添加到/etc/hosts并将主机名设置为master1。</p>
+<pre><code class="hljs bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">"192.168.1.4 master1"</span> &gt;&gt; /etc/hosts
+
+hostnamectl <span class="hljs-built_in">set</span>-hostname master1</code></pre>
+
+<h3 id="安装Docker和Kubernetes"><a href="#安装Docker和Kubernetes" class="headerlink" title="安装Docker和Kubernetes"></a>安装Docker和Kubernetes</h3><p>接下来，我们将按照官方文档使用kubeadm安装docker和Kubernetes。</p>
+<p>按照<a href="https://kubernetes.io/docs/setup/production-environment/container-runtimes/" target="_blank" rel="noopener">容器运行时</a>文档中的步骤安装Docker 。</p>
+<p>请注意，<a href="https://kubernetes.io/docs/setup/production-environment/container-runtimes/#cgroup-drivers" target="_blank" rel="noopener">最佳做法是将systemd用作Kubernetes 的cgroup驱动程序</a>。如果你使用内部容器注册表，请将其添加到docker 配置中。</p>
+<pre><code class="hljs bash"><span class="hljs-comment"># Install Docker CE</span>
+<span class="hljs-comment">## Set up the repository</span>
+<span class="hljs-comment">### Install required packages.</span>
+
+yum install yum-utils device-mapper-persistent-data lvm2
+
+<span class="hljs-comment">### Add Docker repository.</span>
+
+yum-config-manager \
+  --add-repo \
+  https://download.docker.com/linux/centos/docker-ce.repo
+
+<span class="hljs-comment">## Install Docker CE.</span>
+
+yum update &amp;&amp; yum install docker-ce-18.06.2.ce
+
+<span class="hljs-comment">## Create /etc/docker directory.</span>
+
+mkdir /etc/docker
+
+<span class="hljs-comment"># Configure the Docker daemon</span>
+
+cat &gt; /etc/docker/daemon.json &lt;&lt;EOF
+&#123;
+  <span class="hljs-string">"exec-opts"</span>: [<span class="hljs-string">"native.cgroupdriver=systemd"</span>],
+  <span class="hljs-string">"log-driver"</span>: <span class="hljs-string">"json-file"</span>,
+  <span class="hljs-string">"log-opts"</span>: &#123;
+    <span class="hljs-string">"max-size"</span>: <span class="hljs-string">"100m"</span>
+  &#125;,
+  <span class="hljs-string">"storage-driver"</span>: <span class="hljs-string">"overlay2"</span>,
+  <span class="hljs-string">"storage-opts"</span>: [
+    <span class="hljs-string">"overlay2.override_kernel_check=true"</span>
+  ]
+&#125;
+EOF
+
+mkdir -p /etc/systemd/system/docker.service.d
+
+<span class="hljs-comment"># Restart Docker</span>
+systemctl daemon-reload
+systemctl restart docker
+systemctl <span class="hljs-built_in">enable</span> docker</code></pre>
+
+<p>按照<a href="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/" target="_blank" rel="noopener">Kubeadm安装文档</a>中的步骤，安装kubeadm。</p>
+<pre><code class="hljs bash">cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+
+<span class="hljs-comment"># Set SELinux in permissive mode (effectively disabling it)</span>
+<span class="hljs-comment"># Caveat: In a production environment you may not want to disable SELinux, please refer to Kubernetes documents about SELinux</span>
+setenforce 0
+sed -i <span class="hljs-string">'s/^SELINUX=enforcing$/SELINUX=permissive/'</span> /etc/selinux/config
+
+yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+systemctl <span class="hljs-built_in">enable</span> --now kubelet
+
+cat &lt;&lt;EOF &gt;  /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl --system
+
+<span class="hljs-comment"># check if br_netfilter module is loaded</span>
+lsmod | grep br_netfilter
+
+<span class="hljs-comment"># if not, load it explicitly with </span>
+modprobe br_netfilter</code></pre>
+
+<p>根据官方文档<a href="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/" target="_blank" rel="noopener">创建单个控制面板（主节点）群集中找到</a>，我们来创建单个控制面板（主节点）集群</p>
+<p>我们将主要遵循该文档来创建集群，但还会为云厂商添加其他内容。为了使事情更清楚，对于控制面板节点（主节点）我们将使用一个kubeadm-config.yml配置文件。在此配置中，我们指定使用外部OpenStack云厂商，以及在何处找到其配置。**我们还在API服务器的运行时配置中启用了存储API，因此我们可以将OpenStack存储卷用作Kubernetes中的持久卷。</p>
+<pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">kubeadm.k8s.io/v1beta1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">InitConfiguration</span>
+<span class="hljs-attr">nodeRegistration:</span>
+  <span class="hljs-attr">kubeletExtraArgs:</span>
+    <span class="hljs-attr">cloud-provider:</span> <span class="hljs-string">"external"</span>
+<span class="hljs-meta">---</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">kubeadm.k8s.io/v1beta2</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">ClusterConfiguration</span>
+<span class="hljs-attr">kubernetesVersion:</span> <span class="hljs-string">"v1.15.1"</span>
+<span class="hljs-attr">apiServer:</span>
+  <span class="hljs-attr">extraArgs:</span>
+    <span class="hljs-attr">enable-admission-plugins:</span> <span class="hljs-string">NodeRestriction</span>
+    <span class="hljs-attr">runtime-config:</span> <span class="hljs-string">"storage.k8s.io/v1=true"</span>
+<span class="hljs-attr">controllerManager:</span>
+  <span class="hljs-attr">extraArgs:</span>
+    <span class="hljs-attr">external-cloud-volume-plugin:</span> <span class="hljs-string">openstack</span>
+  <span class="hljs-attr">extraVolumes:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">"cloud-config"</span>
+    <span class="hljs-attr">hostPath:</span> <span class="hljs-string">"/etc/kubernetes/cloud-config"</span>
+    <span class="hljs-attr">mountPath:</span> <span class="hljs-string">"/etc/kubernetes/cloud-config"</span>
+    <span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span>
+    <span class="hljs-attr">pathType:</span> <span class="hljs-string">File</span>
+<span class="hljs-attr">networking:</span>
+  <span class="hljs-attr">serviceSubnet:</span> <span class="hljs-string">"10.96.0.0/12"</span>
+  <span class="hljs-attr">podSubnet:</span> <span class="hljs-string">"10.224.0.0/16"</span>
+  <span class="hljs-attr">dnsDomain:</span> <span class="hljs-string">"cluster.local"</span></code></pre>
+
+<p>现在，我们将为OpenStack 创建配置/etc/kubernetes/cloud-config。请注意，此处的租户是我们一开始为所有Kubernetes VM创建的租户。所有虚拟机都应在该项目/租户中启动。另外，你需要在此租户中创建一个用户，以便Kubernetes进行查询。 ca-file 是OpenStack API端点的CA根证书，目前，云厂商不允许不安全的连接（跳过CA检查），例如<a href="https://openstack.cloud:5000/v3" target="_blank" rel="noopener">https://openstack.cloud:5000/v3</a> 。</p>
+<pre><code class="hljs yaml"><span class="hljs-string">[Global]</span>
+<span class="hljs-string">region=RegionOne</span>
+<span class="hljs-string">username=username</span>
+<span class="hljs-string">password=password</span>
+<span class="hljs-string">auth-url=https://openstack.cloud:5000/v3</span>
+<span class="hljs-string">tenant-id=14ba698c0aec4fd6b7dc8c310f664009</span>
+<span class="hljs-string">domain-id=default</span>
+<span class="hljs-string">ca-file=/etc/kubernetes/ca.pem</span>
+
+<span class="hljs-string">[LoadBalancer]</span>
+<span class="hljs-string">subnet-id=b4a9a292-ea48-4125-9fb2-8be2628cb7a1</span>
+<span class="hljs-string">floating-network-id=bc8a590a-5d65-4525-98f3-f7ef29c727d5</span>
+
+<span class="hljs-string">[BlockStorage]</span>
+<span class="hljs-string">bs-version=v2</span>
+
+<span class="hljs-string">[Networking]</span>
+<span class="hljs-string">public-network-name=public</span>
+<span class="hljs-string">ipv6-support-disabled=false</span></code></pre>
+
+<p>接下来，我们来运行kubeadm以启动控制面板节点（主节点）</p>
+<pre><code class="hljs bash">kubeadm init --config=kubeadm-config.yml</code></pre>
+
+<p>完成初始化后，将admin config复制到.kube路径下</p>
+<pre><code class="hljs bash">mkdir -p <span class="hljs-variable">$HOME</span>/.kube
+sudo cp -i /etc/kubernetes/admin.conf <span class="hljs-variable">$HOME</span>/.kube/config
+sudo chown $(id -u):$(id -g) <span class="hljs-variable">$HOME</span>/.kube/config</code></pre>
+
+<p>在此阶段，控制面板节点（主节点）已创建但尚未就绪。所有节点都有污点node.cloudprovider.kubernetes.io/uninitialized=true:NoSchedule，正在等待由 cloud-controller-manager（云厂商控制器管理器）初始化。</p>
+<pre><code class="hljs bash"><span class="hljs-comment"># kubectl describe no master1</span>
+Name:               master1
+Roles:              master
+......
+Taints:             node-role.kubernetes.io/master:NoSchedule
+                    node.cloudprovider.kubernetes.io/uninitialized=<span class="hljs-literal">true</span>:NoSchedule
+                    node.kubernetes.io/not-ready:NoSchedule
+......</code></pre>
+
+<p>现在，根据<a href="https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/using-controller-manager-with-kubeadm.md" target="_blank" rel="noopener">将控制器管理器与kubeadm结合使用</a>文档，将OpenStack云控制器管理器部署到kubernetes集群中。</p>
+<p>使用cloud-config为openstack云厂商创建一个密钥。</p>
+<pre><code class="hljs yaml"><span class="hljs-string">kubectl</span> <span class="hljs-string">create</span> <span class="hljs-string">secret</span> <span class="hljs-string">-n</span> <span class="hljs-string">kube-system</span> <span class="hljs-string">generic</span> <span class="hljs-string">cloud-config</span> <span class="hljs-string">--from-literal=cloud.conf="$(cat</span> <span class="hljs-string">/etc/kubernetes/cloud-config)"</span> <span class="hljs-string">--dry-run</span> <span class="hljs-string">-o</span> <span class="hljs-string">yaml</span> <span class="hljs-string">&gt;</span> <span class="hljs-string">cloud-config-secret.yaml</span>
+<span class="hljs-string">kubectl</span> <span class="hljs-string">apply</span> <span class="hljs-string">-f</span> <span class="hljs-string">cloud-config-secret.yaml</span></code></pre>
+
+<p>获取OpenStack API端点的CA证书，并将其放入/etc/kubernetes/ca.pem中。</p>
+<p>创建RBAC资源。</p>
+<pre><code class="hljs bash">kubectl apply -f https://github.com/kubernetes/cloud-provider-openstack/raw/release-1.15/cluster/addons/rbac/cloud-controller-manager-roles.yaml
+kubectl apply -f https://github.com/kubernetes/cloud-provider-openstack/raw/release-1.15/cluster/addons/rbac/cloud-controller-manager-role-bindings.yaml</code></pre>
+
+<p>我们将以DaemonSet而不是Pod的形式运行OpenStack云控制器管理器。该管理器仅在控制面板节点（主节点）上运行，因此，如果有多个控制面板节点（主节点），则将运行多个Pod以实现高可用性。创建如下的openstack-cloud-controller-manager-ds.yaml文件，然后应用它。</p>
+<pre><code class="hljs yaml"><span class="hljs-meta">---</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">ServiceAccount</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">cloud-controller-manager</span>
+  <span class="hljs-attr">namespace:</span> <span class="hljs-string">kube-system</span>
+<span class="hljs-meta">---</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">apps/v1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">DaemonSet</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">openstack-cloud-controller-manager</span>
+  <span class="hljs-attr">namespace:</span> <span class="hljs-string">kube-system</span>
+  <span class="hljs-attr">labels:</span>
+    <span class="hljs-attr">k8s-app:</span> <span class="hljs-string">openstack-cloud-controller-manager</span>
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">selector:</span>
+    <span class="hljs-attr">matchLabels:</span>
+      <span class="hljs-attr">k8s-app:</span> <span class="hljs-string">openstack-cloud-controller-manager</span>
+  <span class="hljs-attr">updateStrategy:</span>
+    <span class="hljs-attr">type:</span> <span class="hljs-string">RollingUpdate</span>
+  <span class="hljs-attr">template:</span>
+    <span class="hljs-attr">metadata:</span>
+      <span class="hljs-attr">labels:</span>
+        <span class="hljs-attr">k8s-app:</span> <span class="hljs-string">openstack-cloud-controller-manager</span>
+    <span class="hljs-attr">spec:</span>
+      <span class="hljs-attr">nodeSelector:</span>
+        <span class="hljs-attr">node-role.kubernetes.io/master:</span> <span class="hljs-string">""</span>
+      <span class="hljs-attr">securityContext:</span>
+        <span class="hljs-attr">runAsUser:</span> <span class="hljs-number">1001</span>
+      <span class="hljs-attr">tolerations:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">node.cloudprovider.kubernetes.io/uninitialized</span>
+        <span class="hljs-attr">value:</span> <span class="hljs-string">"true"</span>
+        <span class="hljs-attr">effect:</span> <span class="hljs-string">NoSchedule</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">key:</span> <span class="hljs-string">node-role.kubernetes.io/master</span>
+        <span class="hljs-attr">effect:</span> <span class="hljs-string">NoSchedule</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">effect:</span> <span class="hljs-string">NoSchedule</span>
+        <span class="hljs-attr">key:</span> <span class="hljs-string">node.kubernetes.io/not-ready</span>
+      <span class="hljs-attr">serviceAccountName:</span> <span class="hljs-string">cloud-controller-manager</span>
+      <span class="hljs-attr">containers:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">openstack-cloud-controller-manager</span>
+          <span class="hljs-attr">image:</span> <span class="hljs-string">docker.io/k8scloudprovider/openstack-cloud-controller-manager:v1.15.0</span>
+          <span class="hljs-attr">args:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">/bin/openstack-cloud-controller-manager</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">--v=1</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">--cloud-config=$(CLOUD_CONFIG)</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">--cloud-provider=openstack</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">--use-service-account-credentials=true</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">--address=127.0.0.1</span>
+          <span class="hljs-attr">volumeMounts:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/kubernetes/pki</span>
+              <span class="hljs-attr">name:</span> <span class="hljs-string">k8s-certs</span>
+              <span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/ssl/certs</span>
+              <span class="hljs-attr">name:</span> <span class="hljs-string">ca-certs</span>
+              <span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/config</span>
+              <span class="hljs-attr">name:</span> <span class="hljs-string">cloud-config-volume</span>
+              <span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/usr/libexec/kubernetes/kubelet-plugins/volume/exec</span>
+              <span class="hljs-attr">name:</span> <span class="hljs-string">flexvolume-dir</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/kubernetes</span>
+              <span class="hljs-attr">name:</span> <span class="hljs-string">ca-cert</span>
+              <span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span>
+          <span class="hljs-attr">resources:</span>
+            <span class="hljs-attr">requests:</span>
+              <span class="hljs-attr">cpu:</span> <span class="hljs-string">200m</span>
+          <span class="hljs-attr">env:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">CLOUD_CONFIG</span>
+              <span class="hljs-attr">value:</span> <span class="hljs-string">/etc/config/cloud.conf</span>
+      <span class="hljs-attr">hostNetwork:</span> <span class="hljs-literal">true</span>
+      <span class="hljs-attr">volumes:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">hostPath:</span>
+          <span class="hljs-attr">path:</span> <span class="hljs-string">/usr/libexec/kubernetes/kubelet-plugins/volume/exec</span>
+          <span class="hljs-attr">type:</span> <span class="hljs-string">DirectoryOrCreate</span>
+        <span class="hljs-attr">name:</span> <span class="hljs-string">flexvolume-dir</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">hostPath:</span>
+          <span class="hljs-attr">path:</span> <span class="hljs-string">/etc/kubernetes/pki</span>
+          <span class="hljs-attr">type:</span> <span class="hljs-string">DirectoryOrCreate</span>
+        <span class="hljs-attr">name:</span> <span class="hljs-string">k8s-certs</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">hostPath:</span>
+          <span class="hljs-attr">path:</span> <span class="hljs-string">/etc/ssl/certs</span>
+          <span class="hljs-attr">type:</span> <span class="hljs-string">DirectoryOrCreate</span>
+        <span class="hljs-attr">name:</span> <span class="hljs-string">ca-certs</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">cloud-config-volume</span>
+        <span class="hljs-attr">secret:</span>
+          <span class="hljs-attr">secretName:</span> <span class="hljs-string">cloud-config</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ca-cert</span>
+        <span class="hljs-attr">secret:</span>
+          <span class="hljs-attr">secretName:</span> <span class="hljs-string">openstack-ca-cert</span></code></pre>
+
+<p>controller manager 运行时，它将查询OpenStack以获取有关节点的信息并删除污点。在节点信息中，你将看到OpenStack中VM的UUID。</p>
+<pre><code class="hljs bash"><span class="hljs-comment"># kubectl describe no master1</span>
+Name:               master1
+Roles:              master
+......
+Taints:             node-role.kubernetes.io/master:NoSchedule
+                    node.kubernetes.io/not-ready:NoSchedule
+......
+sage:docker: network plugin is not ready: cni config uninitialized
+......
+PodCIDR:                     10.224.0.0/24
+ProviderID:                  openstack:///548e3c46-2477-4ce2-968b-3de1314560a5</code></pre>
+
+<p>现在安装你喜欢的CNI，控制面板节点（主节点）将准备就绪。</p>
+<p>例如，要安装Weave Net，请运行以下命令：</p>
+<pre><code class="hljs bash">kubectl apply -f <span class="hljs-string">"https://cloud.weave.works/k8s/net?k8s-version=<span class="hljs-variable">$(kubectl version | base64 | tr -d '\n')</span>"</span></code></pre>
+
+<p>接下来，我们将设置工作节点。</p>
+<p>首先，用在控制面板节点（主节点）中相同的方式，安装docker和kubeadm。要将它们加入集群，我们需要从控制面板节点（主节点）安装输出中获得令牌和ca cert 哈希值。如果它已过期或丢失，我们可以使用以下命令重新创建它。</p>
+<pre><code class="hljs bash"><span class="hljs-comment"># check if token is expired</span>
+kubeadm token list
+
+<span class="hljs-comment"># re-create token and show join command</span>
+kubeadm token create --<span class="hljs-built_in">print</span>-join-command</code></pre>
+
+<p>使用上述令牌和ca cert哈希值为工作节点创建kubeadm-config.yml配置文件。</p>
+<pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">kubeadm.k8s.io/v1beta2</span>
+<span class="hljs-attr">discovery:</span>
+  <span class="hljs-attr">bootstrapToken:</span>
+    <span class="hljs-attr">apiServerEndpoint:</span> <span class="hljs-number">192.168</span><span class="hljs-number">.1</span><span class="hljs-number">.7</span><span class="hljs-string">:6443</span>
+    <span class="hljs-attr">token:</span> <span class="hljs-string">0c0z4p.dnafh6vnmouus569</span>
+    <span class="hljs-attr">caCertHashes:</span> <span class="hljs-string">["sha256:fcb3e956a6880c05fc9d09714424b827f57a6fdc8afc44497180905946527adf"]</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">JoinConfiguration</span>
+<span class="hljs-attr">nodeRegistration:</span>
+  <span class="hljs-attr">kubeletExtraArgs:</span>
+    <span class="hljs-attr">cloud-provider:</span> <span class="hljs-string">"external"</span></code></pre>
+
+<p>apiServerEndpoint是控制面板节点（主节点），令牌和caCertHashes可从kubeadm token create命令的输出中打印的 join 命令中获取。</p>
+<p>运行kubeadm，工作节点将加入集群。</p>
+<pre><code class="hljs bash">kubeadm join  --config kubeadm-config.yml</code></pre>
+
+<p>在这个阶段，我们将拥有一个在外部OpenStack云厂商运行的Kubernetes集群。厂商会告知Kubernetes，Kubernetes节点与OpenStack VM之间的映射。如果Kubernetes想要将持久卷附加到Pod，则可以从映射中找出Pod在哪个OpenStack VM上运行，并可以将底层OpenStack存储卷相应地附加到VM。</p>
+<h3 id="部署Cinder-CSI"><a href="#部署Cinder-CSI" class="headerlink" title="部署Cinder CSI"></a>部署Cinder CSI</h3><p>与Cinder的集成由外部Cinder CSI插件提供，正如<a href="https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/using-cinder-csi-plugin.md" target="_blank" rel="noopener">Cinder CSI</a>文档中所述。</p>
+<p>我们将执行以下步骤来安装Cinder CSI插件。</p>
+<p>首先，使用CA证书为OpenStack的API端点创建一个密钥。与我们在上面的云厂商中使用的证书文件相同。</p>
+<pre><code class="hljs bash">kubectl create secret -n kube-system generic openstack-ca-cert --from-literal=ca.pem=<span class="hljs-string">"<span class="hljs-variable">$(cat /etc/kubernetes/ca.pem)</span>"</span> --dry-run -o yaml &gt; openstack-ca-cert.yaml
+kubectl apply -f openstack-ca-cert.yaml</code></pre>
+
+<p>然后创建RBAC资源。</p>
+<pre><code class="hljs bash">kubectl apply -f https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/release-1.15/manifests/cinder-csi-plugin/cinder-csi-controllerplugin-rbac.yaml
+kubectl apply -f https://github.com/kubernetes/cloud-provider-openstack/raw/release-1.15/manifests/cinder-csi-plugin/cinder-csi-nodeplugin-rbac.yaml</code></pre>
+
+<p>Cinder CSI插件包括控制器插件和节点插件。控制器与Kubernetes API和Cinder API通信以 create/attach/detach/delete （创建/附加/分离/删除）Cinder卷。节点插件依次在每个工作节点上运行，以将存储设备（附加的卷）绑定到Pod，并在删除过程中取消绑定。创建cinder-csi-controllerplugin.yaml并应用它以创建csi控制器。</p>
+<pre><code class="hljs yaml"><span class="hljs-attr">kind:</span> <span class="hljs-string">Service</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">csi-cinder-controller-service</span>
+  <span class="hljs-attr">namespace:</span> <span class="hljs-string">kube-system</span>
+  <span class="hljs-attr">labels:</span>
+    <span class="hljs-attr">app:</span> <span class="hljs-string">csi-cinder-controllerplugin</span>
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">selector:</span>
+    <span class="hljs-attr">app:</span> <span class="hljs-string">csi-cinder-controllerplugin</span>
+  <span class="hljs-attr">ports:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">dummy</span>
+      <span class="hljs-attr">port:</span> <span class="hljs-number">12345</span>
+
+<span class="hljs-meta">---</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">StatefulSet</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">apps/v1</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">csi-cinder-controllerplugin</span>
+  <span class="hljs-attr">namespace:</span> <span class="hljs-string">kube-system</span>
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">serviceName:</span> <span class="hljs-string">"csi-cinder-controller-service"</span>
+  <span class="hljs-attr">replicas:</span> <span class="hljs-number">1</span>
+  <span class="hljs-attr">selector:</span>
+    <span class="hljs-attr">matchLabels:</span>
+      <span class="hljs-attr">app:</span> <span class="hljs-string">csi-cinder-controllerplugin</span>
+  <span class="hljs-attr">template:</span>
+    <span class="hljs-attr">metadata:</span>
+      <span class="hljs-attr">labels:</span>
+        <span class="hljs-attr">app:</span> <span class="hljs-string">csi-cinder-controllerplugin</span>
+    <span class="hljs-attr">spec:</span>
+      <span class="hljs-attr">serviceAccount:</span> <span class="hljs-string">csi-cinder-controller-sa</span>
+      <span class="hljs-attr">containers:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">csi-attacher</span>
+          <span class="hljs-attr">image:</span> <span class="hljs-string">quay.io/k8scsi/csi-attacher:v1.0.1</span>
+          <span class="hljs-attr">args:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--v=5"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--csi-address=$(ADDRESS)"</span>
+          <span class="hljs-attr">env:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ADDRESS</span>
+              <span class="hljs-attr">value:</span> <span class="hljs-string">/var/lib/csi/sockets/pluginproxy/csi.sock</span>
+          <span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">"IfNotPresent"</span>
+          <span class="hljs-attr">volumeMounts:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">socket-dir</span>
+              <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/var/lib/csi/sockets/pluginproxy/</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">csi-provisioner</span>
+          <span class="hljs-attr">image:</span> <span class="hljs-string">quay.io/k8scsi/csi-provisioner:v1.0.1</span>
+          <span class="hljs-attr">args:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--provisioner=csi-cinderplugin"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--csi-address=$(ADDRESS)"</span>
+          <span class="hljs-attr">env:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ADDRESS</span>
+              <span class="hljs-attr">value:</span> <span class="hljs-string">/var/lib/csi/sockets/pluginproxy/csi.sock</span>
+          <span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">"IfNotPresent"</span>
+          <span class="hljs-attr">volumeMounts:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">socket-dir</span>
+              <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/var/lib/csi/sockets/pluginproxy/</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">csi-snapshotter</span>
+          <span class="hljs-attr">image:</span> <span class="hljs-string">quay.io/k8scsi/csi-snapshotter:v1.0.1</span>
+          <span class="hljs-attr">args:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--connection-timeout=15s"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--csi-address=$(ADDRESS)"</span>
+          <span class="hljs-attr">env:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ADDRESS</span>
+              <span class="hljs-attr">value:</span> <span class="hljs-string">/var/lib/csi/sockets/pluginproxy/csi.sock</span>
+          <span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">Always</span>
+          <span class="hljs-attr">volumeMounts:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/var/lib/csi/sockets/pluginproxy/</span>
+              <span class="hljs-attr">name:</span> <span class="hljs-string">socket-dir</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">cinder-csi-plugin</span>
+          <span class="hljs-attr">image:</span> <span class="hljs-string">docker.io/k8scloudprovider/cinder-csi-plugin:v1.15.0</span>
+          <span class="hljs-attr">args :</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">/bin/cinder-csi-plugin</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--v=5"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--nodeid=$(NODE_ID)"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--endpoint=$(CSI_ENDPOINT)"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--cloud-config=$(CLOUD_CONFIG)"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--cluster=$(CLUSTER_NAME)"</span>
+          <span class="hljs-attr">env:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">NODE_ID</span>
+              <span class="hljs-attr">valueFrom:</span>
+                <span class="hljs-attr">fieldRef:</span>
+                  <span class="hljs-attr">fieldPath:</span> <span class="hljs-string">spec.nodeName</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">CSI_ENDPOINT</span>
+              <span class="hljs-attr">value:</span> <span class="hljs-string">unix://csi/csi.sock</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">CLOUD_CONFIG</span>
+              <span class="hljs-attr">value:</span> <span class="hljs-string">/etc/config/cloud.conf</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">CLUSTER_NAME</span>
+              <span class="hljs-attr">value:</span> <span class="hljs-string">kubernetes</span>
+          <span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">"IfNotPresent"</span>
+          <span class="hljs-attr">volumeMounts:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">socket-dir</span>
+              <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/csi</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">secret-cinderplugin</span>
+              <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/config</span>
+              <span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/kubernetes</span>
+              <span class="hljs-attr">name:</span> <span class="hljs-string">ca-cert</span>
+              <span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span>
+      <span class="hljs-attr">volumes:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">socket-dir</span>
+          <span class="hljs-attr">hostPath:</span>
+            <span class="hljs-attr">path:</span> <span class="hljs-string">/var/lib/csi/sockets/pluginproxy/</span>
+            <span class="hljs-attr">type:</span> <span class="hljs-string">DirectoryOrCreate</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">secret-cinderplugin</span>
+          <span class="hljs-attr">secret:</span>
+            <span class="hljs-attr">secretName:</span> <span class="hljs-string">cloud-config</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ca-cert</span>
+          <span class="hljs-attr">secret:</span>
+            <span class="hljs-attr">secretName:</span> <span class="hljs-string">openstack-ca-cert</span></code></pre>
+
+<p>创建cinder-csi-nodeplugin.yaml并应用它来创建csi节点。</p>
+<pre><code class="hljs yaml"><span class="hljs-attr">kind:</span> <span class="hljs-string">DaemonSet</span>
+<span class="hljs-attr">apiVersion:</span> <span class="hljs-string">apps/v1</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">csi-cinder-nodeplugin</span>
+  <span class="hljs-attr">namespace:</span> <span class="hljs-string">kube-system</span>
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">selector:</span>
+    <span class="hljs-attr">matchLabels:</span>
+      <span class="hljs-attr">app:</span> <span class="hljs-string">csi-cinder-nodeplugin</span>
+  <span class="hljs-attr">template:</span>
+    <span class="hljs-attr">metadata:</span>
+      <span class="hljs-attr">labels:</span>
+        <span class="hljs-attr">app:</span> <span class="hljs-string">csi-cinder-nodeplugin</span>
+    <span class="hljs-attr">spec:</span>
+      <span class="hljs-attr">serviceAccount:</span> <span class="hljs-string">csi-cinder-node-sa</span>
+      <span class="hljs-attr">hostNetwork:</span> <span class="hljs-literal">true</span>
+      <span class="hljs-attr">containers:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">node-driver-registrar</span>
+          <span class="hljs-attr">image:</span> <span class="hljs-string">quay.io/k8scsi/csi-node-driver-registrar:v1.1.0</span>
+          <span class="hljs-attr">args:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--v=5"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--csi-address=$(ADDRESS)"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"</span>
+          <span class="hljs-attr">lifecycle:</span>
+            <span class="hljs-attr">preStop:</span>
+              <span class="hljs-attr">exec:</span>
+                <span class="hljs-attr">command:</span> <span class="hljs-string">["/bin/sh",</span> <span class="hljs-string">"-c"</span><span class="hljs-string">,</span> <span class="hljs-string">"rm -rf /registration/cinder.csi.openstack.org /registration/cinder.csi.openstack.org-reg.sock"</span><span class="hljs-string">]</span>
+          <span class="hljs-attr">env:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ADDRESS</span>
+              <span class="hljs-attr">value:</span> <span class="hljs-string">/csi/csi.sock</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">DRIVER_REG_SOCK_PATH</span>
+              <span class="hljs-attr">value:</span> <span class="hljs-string">/var/lib/kubelet/plugins/cinder.csi.openstack.org/csi.sock</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">KUBE_NODE_NAME</span>
+              <span class="hljs-attr">valueFrom:</span>
+                <span class="hljs-attr">fieldRef:</span>
+                  <span class="hljs-attr">fieldPath:</span> <span class="hljs-string">spec.nodeName</span>
+          <span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">"IfNotPresent"</span>
+          <span class="hljs-attr">volumeMounts:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">socket-dir</span>
+              <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/csi</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">registration-dir</span>
+              <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/registration</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">cinder-csi-plugin</span>
+          <span class="hljs-attr">securityContext:</span>
+            <span class="hljs-attr">privileged:</span> <span class="hljs-literal">true</span>
+            <span class="hljs-attr">capabilities:</span>
+              <span class="hljs-attr">add:</span> <span class="hljs-string">["SYS_ADMIN"]</span>
+            <span class="hljs-attr">allowPrivilegeEscalation:</span> <span class="hljs-literal">true</span>
+          <span class="hljs-attr">image:</span> <span class="hljs-string">docker.io/k8scloudprovider/cinder-csi-plugin:v1.15.0</span>
+          <span class="hljs-attr">args :</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">/bin/cinder-csi-plugin</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--nodeid=$(NODE_ID)"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--endpoint=$(CSI_ENDPOINT)"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">"--cloud-config=$(CLOUD_CONFIG)"</span>
+          <span class="hljs-attr">env:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">NODE_ID</span>
+              <span class="hljs-attr">valueFrom:</span>
+                <span class="hljs-attr">fieldRef:</span>
+                  <span class="hljs-attr">fieldPath:</span> <span class="hljs-string">spec.nodeName</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">CSI_ENDPOINT</span>
+              <span class="hljs-attr">value:</span> <span class="hljs-string">unix://csi/csi.sock</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">CLOUD_CONFIG</span>
+              <span class="hljs-attr">value:</span> <span class="hljs-string">/etc/config/cloud.conf</span>
+          <span class="hljs-attr">imagePullPolicy:</span> <span class="hljs-string">"IfNotPresent"</span>
+          <span class="hljs-attr">volumeMounts:</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">socket-dir</span>
+              <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/csi</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">pods-mount-dir</span>
+              <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/var/lib/kubelet/pods</span>
+              <span class="hljs-attr">mountPropagation:</span> <span class="hljs-string">"Bidirectional"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">kubelet-dir</span>
+              <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/var/lib/kubelet</span>
+              <span class="hljs-attr">mountPropagation:</span> <span class="hljs-string">"Bidirectional"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">pods-cloud-data</span>
+              <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/var/lib/cloud/data</span>
+              <span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">pods-probe-dir</span>
+              <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/dev</span>
+              <span class="hljs-attr">mountPropagation:</span> <span class="hljs-string">"HostToContainer"</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">secret-cinderplugin</span>
+              <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/config</span>
+              <span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">/etc/kubernetes</span>
+              <span class="hljs-attr">name:</span> <span class="hljs-string">ca-cert</span>
+              <span class="hljs-attr">readOnly:</span> <span class="hljs-literal">true</span>
+      <span class="hljs-attr">volumes:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">socket-dir</span>
+          <span class="hljs-attr">hostPath:</span>
+            <span class="hljs-attr">path:</span> <span class="hljs-string">/var/lib/kubelet/plugins/cinder.csi.openstack.org</span>
+            <span class="hljs-attr">type:</span> <span class="hljs-string">DirectoryOrCreate</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">registration-dir</span>
+          <span class="hljs-attr">hostPath:</span>
+            <span class="hljs-attr">path:</span> <span class="hljs-string">/var/lib/kubelet/plugins_registry/</span>
+            <span class="hljs-attr">type:</span> <span class="hljs-string">Directory</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">kubelet-dir</span>
+          <span class="hljs-attr">hostPath:</span>
+            <span class="hljs-attr">path:</span> <span class="hljs-string">/var/lib/kubelet</span>
+            <span class="hljs-attr">type:</span> <span class="hljs-string">Directory</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">pods-mount-dir</span>
+          <span class="hljs-attr">hostPath:</span>
+            <span class="hljs-attr">path:</span> <span class="hljs-string">/var/lib/kubelet/pods</span>
+            <span class="hljs-attr">type:</span> <span class="hljs-string">Directory</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">pods-cloud-data</span>
+          <span class="hljs-attr">hostPath:</span>
+            <span class="hljs-attr">path:</span> <span class="hljs-string">/var/lib/cloud/data</span>
+            <span class="hljs-attr">type:</span> <span class="hljs-string">Directory</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">pods-probe-dir</span>
+          <span class="hljs-attr">hostPath:</span>
+            <span class="hljs-attr">path:</span> <span class="hljs-string">/dev</span>
+            <span class="hljs-attr">type:</span> <span class="hljs-string">Directory</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">secret-cinderplugin</span>
+          <span class="hljs-attr">secret:</span>
+            <span class="hljs-attr">secretName:</span> <span class="hljs-string">cloud-config</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">ca-cert</span>
+          <span class="hljs-attr">secret:</span>
+            <span class="hljs-attr">secretName:</span> <span class="hljs-string">openstack-ca-cert</span></code></pre>
+
+<p>当它们都在运行时，为Cinder创建一个 storage class 。</p>
+<pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">storage.k8s.io/v1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">StorageClass</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">csi-sc-cinderplugin</span>
+<span class="hljs-attr">provisioner:</span> <span class="hljs-string">csi-cinderplugin</span></code></pre>
+
+<p>然后，我们可以使用 storage class 创建PVC。</p>
+<pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">PersistentVolumeClaim</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">myvol</span>
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">accessModes:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-string">ReadWriteOnce</span>
+  <span class="hljs-attr">resources:</span>
+    <span class="hljs-string">requests:y</span>
+      <span class="hljs-attr">storage:</span> <span class="hljs-string">1Gi</span>
+  <span class="hljs-attr">storageClassName:</span> <span class="hljs-string">csi-sc-cinderplugin</span></code></pre>
+
+<p>创建PVC时，将相应地创建一个Cinder卷。</p>
+<pre><code class="hljs bash"><span class="hljs-comment"># kubectl get pvc</span>
+NAME    STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS          AGE
+myvol   Bound    pvc-14b8bc68-6c4c-4dc6-ad79-4cb29a81faad   1Gi        RWO            csi-sc-cinderplugin   3s</code></pre>
+
+<p>在OpenStack中，存储卷名称将与Kubernetes持久卷生成的名称匹配。在此示例中为：pvc-14b8bc68-6c4c-4dc6-ad79-4cb29a81faad</p>
+<p>现在，我们可以使用PVC创建容器。</p>
+<pre><code class="hljs yaml"><span class="hljs-attr">apiVersion:</span> <span class="hljs-string">v1</span>
+<span class="hljs-attr">kind:</span> <span class="hljs-string">Pod</span>
+<span class="hljs-attr">metadata:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">web</span>
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">containers:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">web</span>
+      <span class="hljs-attr">image:</span> <span class="hljs-string">nginx</span>
+      <span class="hljs-attr">ports:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">web</span>
+          <span class="hljs-attr">containerPort:</span> <span class="hljs-number">80</span>
+          <span class="hljs-attr">hostPort:</span> <span class="hljs-number">8081</span>
+          <span class="hljs-attr">protocol:</span> <span class="hljs-string">TCP</span>
+      <span class="hljs-attr">volumeMounts:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-attr">mountPath:</span> <span class="hljs-string">"/usr/share/nginx/html"</span>
+          <span class="hljs-attr">name:</span> <span class="hljs-string">mypd</span>
+  <span class="hljs-attr">volumes:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">mypd</span>
+      <span class="hljs-attr">persistentVolumeClaim:</span>
+        <span class="hljs-attr">claimName:</span> <span class="hljs-string">myvol</span></code></pre>
+
+<p>当pod运行时，该存储卷将绑定到pod上。如果回到OpenStack，我们可以看到Cinder存储卷已安装到运行Pod的工作节点上。</p>
+<pre><code class="hljs bash"><span class="hljs-comment"># openstack volume show 6b5f3296-b0eb-40cd-bd4f-2067a0d6287f</span>
++--------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field                          | Value                                                                                                                                                                                                                                                                                                                          |
++--------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| attachments                    | [&#123;u<span class="hljs-string">'server_id'</span>: u<span class="hljs-string">'1c5e1439-edfa-40ed-91fe-2a0e12bc7eb4'</span>, u<span class="hljs-string">'attachment_id'</span>: u<span class="hljs-string">'11a15b30-5c24-41d4-86d9-d92823983a32'</span>, u<span class="hljs-string">'attached_at'</span>: u<span class="hljs-string">'2019-07-24T05:02:34.000000'</span>, u<span class="hljs-string">'host_name'</span>: u<span class="hljs-string">'compute-6'</span>, u<span class="hljs-string">'volume_id'</span>: u<span class="hljs-string">'6b5f3296-b0eb-40cd-bd4f-2067a0d6287f'</span>, u<span class="hljs-string">'device'</span>: u<span class="hljs-string">'/dev/vdb'</span>, u<span class="hljs-string">'id'</span>: u<span class="hljs-string">'6b5f3296-b0eb-40cd-bd4f-2067a0d6287f'</span>&#125;] |
+| availability_zone              | nova                                                                                                                                                                                                                                                                                                                           |
+| bootable                       | <span class="hljs-literal">false</span>                                                                                                                                                                                                                                                                                                                          |
+| consistencygroup_id            | None                                                                                                                                                                                                                                                                                                                           |
+| created_at                     | 2019-07-24T05:02:18.000000                                                                                                                                                                                                                                                                                                     |
+| description                    | Created by OpenStack Cinder CSI driver                                                                                                                                                                                                                                                                                         |
+| encrypted                      | False                                                                                                                                                                                                                                                                                                                          |
+| id                             | 6b5f3296-b0eb-40cd-bd4f-2067a0d6287f                                                                                                                                                                                                                                                                                           |
+| migration_status               | None                                                                                                                                                                                                                                                                                                                           |
+| multiattach                    | False                                                                                                                                                                                                                                                                                                                          |
+| name                           | pvc-14b8bc68-6c4c-4dc6-ad79-4cb29a81faad                                                                                                                                                                                                                                                                                       |
+| os-vol-host-attr:host          | rbd:volumes@rbd<span class="hljs-comment">#rbd                                                                                                                                                                                                                                                                                                            |</span>
+| os-vol-mig-status-attr:migstat | None                                                                                                                                                                                                                                                                                                                           |
+| os-vol-mig-status-attr:name_id | None                                                                                                                                                                                                                                                                                                                           |
+| os-vol-tenant-attr:tenant_id   | 14ba698c0aec4fd6b7dc8c310f664009                                                                                                                                                                                                                                                                                               |
+| properties                     | attached_mode=<span class="hljs-string">'rw'</span>, cinder.csi.openstack.org/cluster=<span class="hljs-string">'kubernetes'</span>                                                                                                                                                                                                                                                              |
+| replication_status             | None                                                                                                                                                                                                                                                                                                                           |
+| size                           | 1                                                                                                                                                                                                                                                                                                                              |
+| snapshot_id                    | None                                                                                                                                                                                                                                                                                                                           |
+| source_volid                   | None                                                                                                                                                                                                                                                                                                                           |
+| status                         | <span class="hljs-keyword">in</span>-use                                                                                                                                                                                                                                                                                                                         |
+| <span class="hljs-built_in">type</span>                           | rbd                                                                                                                                                                                                                                                                                                                            |
+| updated_at                     | 2019-07-24T05:02:35.000000                                                                                                                                                                                                                                                                                                     |
+| user_id                        | 5f6a7a06f4e3456c890130d56babf591                                                                                                                                                                                                                                                                                               |
++--------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</code></pre>
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>在本演练中，我们在OpenStack VM上部署了一个Kubernetes集群，并与外部OpenStack云厂商集成。然后，在此Kubernetes集群上，我们部署了Cinder CSI插件，该插件可以创建Cinder存储卷，并将它们作为持久卷在Kubernetes中使用。</p>
+<p>作者：王延飞</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/openstack-K8s-kubeadm-CentOS/">openstack, K8s, kubeadm, CentOS</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/05/29/%E4%BD%BF%E7%94%A8DevOps%E4%BB%8E%E4%BC%98%E7%A7%80%E5%88%B0%E5%8D%93%E8%B6%8A/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">使用DevOps从优秀到卓越</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/05/29/%E4%BD%A0%E7%9A%84Kubernetes%E9%9B%86%E7%BE%A4%E5%81%A5%E5%BA%B7%E5%90%97-%E8%BF%99%E9%87%8C%E6%9C%895%E7%A7%8D%E6%A3%80%E9%AA%8C%E6%96%B9%E6%B3%95/">
+                        <span class="hidden-mobile">你的Kubernetes集群健康吗?这里有5种检验方法</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: 'article.markdown-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "使用Kubeadm在外部OpenStack云厂商部署Kubernetes集群&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

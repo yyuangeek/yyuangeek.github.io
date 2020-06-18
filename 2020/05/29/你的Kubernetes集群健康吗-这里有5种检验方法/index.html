@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="YYUAN">
+  <meta name="keywords" content="">
+  <title>你的Kubernetes集群健康吗?这里有5种检验方法 - YuanTech</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css" />
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>YYUAN</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-05-29 13:39">
+      May 29, 2020 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.1k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      22
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p>Kubernetes 是一门极其智能化的科学技术，但是如果搞错了方向，它就会以一种非预期的方式响应. 对于大部分 “聪明的” 科技来说， 其智能化程度取决于操作者。 为了通过使用Kubernetes组建团队来达到成功巅峰，其中最关键的是每一位组员能清晰地掌握Kubernetes 集群。这里有5种方法可以使工程师在建立Kubernetes集群时能最好的鉴定出任何未结的任务，并且尽可能确保负载在最健康的水平（想要更深入的了解 Kubernetes 的可观察性，请查阅电子书 <a href="https://www.sumologic.com/brief/kubernetes-observability/" target="_blank" rel="noopener">Kubernetes Observability</a>）。</p>
+<p>  幸运的是， 在 Kubernetes 环境中有技术可以收集日志、性能指标、事件和安全警告，从而帮助我们模拟各种集群的健康水平。这些收集器从Kubernetes 集群的所有组件中收集数据，它们汇集起来可以得到一个 集群健康状况的 高层级的视图， 并且可以及时深入的了解诸如 资源（resource）， 使用性能(utilization)， 配置(configuration)错误和其他问题。</p>
+<p> <strong>1. 在所有的pod</strong> <strong>库中设置 CPU requests （请求）和 limits （限额）</strong></p>
+<p> requests（请求）和limits（限额）是k8s的一种机制，该机制用来给pods 自动分配 像CPU和内存使用量这样的可用资源 。CPU 是用毫核来定义的， 所以1000毫核等于1核。requests（请求）是预期给定容器所需要的资源使用量，limits（限额）， 换句话说，就是一个容器被允许使用的资源量的实际上限。 </p>
+<p><img src="https://cdn.thenewstack.io/media/2020/01/d26b69ba-sumo1.png" srcset="/img/loading.gif" alt="img"></p>
+<p>确保所有的pods 都指定requests（请求）。一个最佳的实践是给这些pods 指定1核或者更少，如果需要更多算力的话，就添加额外的副本。还有很重要的需要注意的一点， 如果你配置的太高， 比如2000毫核（2核），但是只有1核可用，那么这个pod将永远不会被调度。 在第5步中，我会告诉你如何去重复确认哪些未被调度的pods。</p>
+<p> 确保所有的pods 都有CPU limits（限额）。 如上面提到的，limits（限额）是上限， 所以Kubernetes不允许pod 使用超出limits（限额）所定义的CPU 数量。即便如此，CPU 有点宽容，因为它被认为是一种可压缩资源。如果pod 达到CPU limits（限额）， 它将不会被终止， 而是被限制。你的CPU将被限制，所以你可能会遇到性能问题。</p>
+<p> <strong>2.</strong> <strong>在所有的</strong> <strong>pods</strong> <strong>上设置内存</strong> <strong>requests</strong> <strong>（请求）和</strong> <strong>limits</strong> <strong>（限额）</strong> </p>
+<p><strong><img src="https://cdn.thenewstack.io/media/2020/01/704d2d55-sumo2.png" srcset="/img/loading.gif" alt="img"></strong></p>
+<p> 确保为所有pod设置了内存requests（请求）：内存requests（请求）是指你认为pod将消耗多少数据。与CPU一样，如果内存requests（请求）大于最大节点，Kubernetes也不会调度pod。</p>
+<p>  确保为所有pod设置了内存limits（限额）：内存limits（限额）是允许pod使用多少内存的硬上限。与CPU不同，内存是不可压缩的，不能被限制。如果一个容器超过了它的内存limits（限额），那么它将被终止。</p>
+<p><strong>3.</strong> <strong>审核资源配额</strong></p>
+<p>  Kubernetes的最佳健康状况的另一检查项是— 是否不足或过度配置资源。如果可用CPU和内存过剩，那么消耗不足,很可能有浪费。另一方面，如果接近100%的利用率，则在需要扩展或有意外负载时可能会遇到问题。</p>
+<p>  检查剩余的pod容量。一个有用的Kubernete衡量标准是“kube_node_status_allocatable”，这是Kubernetes在给定平均pod资源利用率的情况下，对一个节点将容纳多少个pod的估计。我们可以把剩余的pod容量加起来，粗略估计一下在不遇到问题的情况下可以扩展多少。<img src="https://cdn.thenewstack.io/media/2020/01/7a0161ca-screen-shot-2020-01-08-at-2.27.59-pm.png" srcset="/img/loading.gif" alt="img"> </p>
+<p>检查总的CPU使用率百分比、请求的CPU百分比与CPU limits（限额）百分比：总的CPU使用率表示现在使用了多少，requests（请求）表示预计可能需要多少，而limits（限额）是我们设置的硬性上限。</p>
+<p>  在下面的例子中，我们只使用了可用算力的2.5%，供应远超实际使用量，而且还可能会减少。相比之下，我们的CPUrequests（请求）是46%，因此我们原以为我们可能需要用到的比实际使用的要多得多。（出现这种情况）要么是预估错误，要么就是有计划以外的突发需求。</p>
+<p>  最后，我们的CPU Burstable告诉我们所有的CPU limits（限额）总和。由于其低于requests（请求）的CPU资源量，我们可能要回去检查我们的限制设置。要么是我们对每一个pod都没有设置limits（限额），要么我们的limits（限额）配置错误。<img src="https://cdn.thenewstack.io/media/2020/01/76a8f135-screen-shot-2020-01-08-at-2.27.19-pm.png" srcset="/img/loading.gif" alt="img"></p>
+<p>  检查总内存使用量百分比、内存requests（请求）百分比与内存limits（限额）百分比。就和检查CPU一样，我们可以检查内存是否配置过大。仅仅3.8%的利用率告诉我们，我们的确实供应过剩了，但我们可以舒适地长期扩展。 </p>
+<p><img src="https://cdn.thenewstack.io/media/2020/01/f25aa68f-screen-shot-2020-01-08-at-2.27.31-pm.png" srcset="/img/loading.gif" alt="img"></p>
+<p><strong>4.</strong> <strong>检查节点间的</strong> <strong>Pod</strong> <strong>分布</strong></p>
+<p>  当我们研究pod是如何在集群中的可用节点上分配时，我们想要一个大致均等的分配。如果某些节点完全超载或欠载，这可能意味着一个值得调查的更大问题出现了。</p>
+<p>  需要检查的一些可能导致分配不均的因素包括：</p>
+<p>  节点亲和力（node affinity）。 亲和力（Affinity）是一个pod设置项，使它们偏好具有某些属性的节点。例如，某些pod可能需要在带有GPU或SSD的计算机上运行，或者某些pod可能需要具有特定安全隔离或特定策略的节点。重复检查关联设置可以帮助缩小 导致不均匀分配的原因的范围，并降低严峻问题发生的可能性。</p>
+<p>  污点（taints）和容忍(tolerations)。污点与亲和力相反。这些是节点的设置项，给节点设置污点，从而使pod 难以调度到这些节点。如果要为特定pod保留节点，或者为了确保该节点上的pod对可用资源具有完全访问权限，则可以使用此选项。</p>
+<p><img src="https://cdn.thenewstack.io/media/2020/01/aacfa6df-sumo7.png" srcset="/img/loading.gif" alt="img">   </p>
+<p>limits（限额）和requests（请求）：回顾limits（限额）和requests（请求）设置项。这常常是问题的起因，以至于它值得在本文的三个部分中提及。如果调度器没有关于pods需要什么的正确信息，那么它的调度工作将会做的很差。</p>
+<p>  <strong>5.</strong> <strong>检查</strong> <strong>pod</strong> <strong>是否处于不良状态</strong></p>
+<p>在Kubernetes环境中，当前的状态每时每刻都在变化，因此过度关注每一个终止的pod会慢慢侵蚀你的时间和理智。然而，为了确保它与您基于当前集群中的事件来作出的预期相符。以下所列项值得关注。 <img src="https://cdn.thenewstack.io/media/2020/01/d710f4dc-screen-shot-2020-01-08-at-2.27.45-pm.png" srcset="/img/loading.gif" alt="img"></p>
+<p> <strong>*Nodes not ready</strong>：节点可能由于多种原因而进入此状态，但通常是因为内存或磁盘空间不足。</p>
+<p> <strong>*Unscheduled pods</strong>：pod通常会由于调度器无法满足CPU或内存requests（请求） 而以未被调度的状态终止。重复检查你的集群是否有足够的podsrequests（请求）的可用资源。</p>
+<p>  <strong>*Pods that failed to create</strong> :Pods在创建时失败，通常是因为镜像问题，比如启动脚本依赖项缺失。这种情况，建议回到原点。</p>
+<p>  <strong>*Container restarts</strong>：只有一部分容器重启是不用担心的，但当你看到大量的（容器重启）则可能意味着pod处于OOMKill（内存不足而被杀死）状态。内存不足是Kubernetes中最常见的错误（error）之一，可能是由于镜像问题、及其引发的依赖问题或意外、limits（限额）和requests（请求）问题引起的。</p>
+<p>  这些集群健康的最佳实践可以限制Kubernetes环境中的意外行为，并确保您不会在将来遇到可伸缩性问题。这些也是帮你回答那些无定形问题的一个起点，比如，“我的Kubernetes集群健康吗？”，如果所有这些项都是绿色的，那么您的集群可能非常健康，那么您可以轻松休息了。</p>
+<p>  想要更深入的了解 Kubernetes 的可观察性，请查阅电子书 <a href="https://www.sumologic.com/brief/kubernetes-observability/" target="_blank" rel="noopener">Kubernetes Observability</a></p>
+<p>作者：wangjing</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/cloudnative-K8s-test-Pod/">cloudnative, K8s, test, Pod</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/05/29/%E4%BD%BF%E7%94%A8Kubeadm%E5%9C%A8%E5%A4%96%E9%83%A8OpenStack%E4%BA%91%E5%8E%82%E5%95%86%E9%83%A8%E7%BD%B2Kubernetes%E9%9B%86%E7%BE%A4/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">使用Kubeadm在外部OpenStack云厂商部署Kubernetes集群</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/05/28/%E4%BD%BF%E7%94%A8Spring-Boot-Operator%E9%83%A8%E7%BD%B2SpringBoot%E5%88%B0K8S/">
+                        <span class="hidden-mobile">使用Spring Boot Operator部署SpringBoot到K8S</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: 'article.markdown-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "你的Kubernetes集群健康吗?这里有5种检验方法&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

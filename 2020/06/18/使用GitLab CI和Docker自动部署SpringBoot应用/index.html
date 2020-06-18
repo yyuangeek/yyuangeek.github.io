@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="YYUAN">
+  <meta name="keywords" content="">
+  <title>使用GitLab CI和Docker自动部署SpringBoot应用 - YuanTech</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css" />
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>YYUAN</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-06-18 22:36">
+      June 18, 2020 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.9k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      35
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p>Docker和Spring Boot是非常流行的组合，我们将利用GitLab CI的优势，并在应用程序服务器上自动构建，推送和运行Docker镜像。</p>
+<h2 id="GitLab-CI"><a href="#GitLab-CI" class="headerlink" title="GitLab CI"></a>GitLab CI</h2><p>Gitlab CI/CD服务是GitLab的一部分。开发人员将代码推送到GitLab存储库时，GitLab CI就会在用户指定的环境中自动构建，测试和存储最新的代码更改。</p>
+<p><strong>选择GitLab CI的一些主要原因：</strong></p>
+<ol>
+<li>易于学习，使用和可扩展</li>
+<li>维护容易</li>
+<li>整合容易</li>
+<li>CI完全属于GitLab存储库的一部分</li>
+<li>良好的Docker集成</li>
+<li>镜像托管(Container registry)-基本上是你自己的私有Docker Hub</li>
+<li>从成本上来说，GitLab CI是一个很好的解决方案。每个月你有2000分钟的免费构建时间，对于某些项目来说，这是绰绰有余的</li>
+</ol>
+<h3 id="为什么GitLab-CI超越Jenkins"><a href="#为什么GitLab-CI超越Jenkins" class="headerlink" title="为什么GitLab CI超越Jenkins"></a>为什么GitLab CI超越Jenkins</h3><p>这无疑是一个广泛讨论的话题，但是在本文中，我们将不深入探讨该话题。GitLab CI和Jenkins都有优点和缺点，它们都是功能非常强大的工具。</p>
+<h4 id="那为什么选择GitLab？"><a href="#那为什么选择GitLab？" class="headerlink" title="那为什么选择GitLab？"></a>那为什么选择GitLab？</h4><p>如前所述，Gitlab CI是GitLab存储库的一部分，这就意味着当我们有了GitLab后，就不需要再安装Gitlab CI，也不需要额外维护。并且只需要编写一个.gitlab-ci.yml文件（下文会详细说明），你便完成了所有CI工作。</p>
+<p>对于小型项目使用Jenkins，你就必须自己配置所有内容。通常，你还需要一台专用的Jenkins服务器，这也需要额外的成本和维护。</p>
+<h4 id="使用GitLab-CI-前提条件"><a href="#使用GitLab-CI-前提条件" class="headerlink" title="使用GitLab CI 前提条件"></a>使用GitLab CI 前提条件</h4><p>如果需要与这些前提条件有关的任何帮助，我已提供相应指南的链接。</p>
+<ol>
+<li>你已经在GitLab上推送了Spring Boot项目</li>
+<li>你已在应用程序服务器上安装了Docker（<a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04" target="_blank" rel="noopener">指南</a>）</li>
+<li>你具有Docker镜像的镜像托管（本文中将使用<a href="https://hub.docker.com/" target="_blank" rel="noopener">Docker Hub</a>）</li>
+<li>你已经在服务器上生成了SSH RSA密钥（<a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-on-ubuntu-1604" target="_blank" rel="noopener">指南</a>）</li>
+</ol>
+<h4 id="你要创建什么"><a href="#你要创建什么" class="headerlink" title="你要创建什么"></a><strong>你要创建什么</strong></h4><p>你将创建Dockerfile 和.gitlab-ci.yml， 它们将自动用于：</p>
+<ol>
+<li>构建应用程序Jar文件</li>
+<li>构建Docker镜像</li>
+<li>将镜像推送到Docker存储库</li>
+<li>在应用程序服务器上运行镜像</li>
+</ol>
+<h4 id="基本项目信息"><a href="#基本项目信息" class="headerlink" title="基本项目信息"></a><strong>基本项目信息</strong></h4><p>本文的Spring Boot应用程序是通过<a href="https://start.spring.io/" target="_blank" rel="noopener">Spring Initializr</a>生成的。这是一个基于Java 8或Java11构建的Maven项目。后面，我们将介绍Java 8和Java 11对Docker镜像有什么影响。</p>
+<h3 id="Docker文件"><a href="#Docker文件" class="headerlink" title="Docker文件"></a>Docker文件</h3><p>让我们从Dockerfile开始。</p>
+<pre><code class="hljs dockerfile"><span class="hljs-keyword">FROM</span> maven:<span class="hljs-number">3.6</span>.<span class="hljs-number">3</span>-jdk-<span class="hljs-number">11</span>-slim AS MAVEN_BUILD
+<span class="hljs-comment">#FROM maven:3.5.2-jdk-8-alpine AS MAVEN_BUILD FOR JAVA 8</span>
+<span class="hljs-keyword">ARG</span> SPRING_ACTIVE_PROFILE
+<span class="hljs-keyword">MAINTAINER</span> Jasmin
+<span class="hljs-keyword">COPY</span><span class="bash"> pom.xml /build/</span>
+<span class="hljs-keyword">COPY</span><span class="bash"> src /build/src/</span>
+<span class="hljs-keyword">WORKDIR</span><span class="bash"> /build/</span>
+
+<span class="hljs-keyword">RUN</span><span class="bash"> mvn clean install -Dspring.profiles.active=<span class="hljs-variable">$SPRING_ACTIVE_PROFILE</span> &amp;&amp; mvn package -B -e -Dspring.profiles.active=<span class="hljs-variable">$SPRING_ACTIVE_PROFILE</span></span>
+<span class="hljs-keyword">FROM</span> openjdk:<span class="hljs-number">11</span>-slim
+<span class="hljs-comment">#FROM openjdk:8-alpine FOR JAVA 8</span>
+<span class="hljs-keyword">WORKDIR</span><span class="bash"> /app</span>
+<span class="hljs-keyword">COPY</span><span class="bash"> --from=MAVEN_BUILD /build/target/appdemo-*.jar /app/appdemo.jar</span>
+<span class="hljs-keyword">ENTRYPOINT</span><span class="bash"> [<span class="hljs-string">"java"</span>, <span class="hljs-string">"-jar"</span>, <span class="hljs-string">"appdemo.jar"</span>]</span></code></pre>
+
+
+
+<h2 id="Java版本"><a href="#Java版本" class="headerlink" title="Java版本"></a>Java版本</h2><p>让我们从Docker的角度看一下<strong>Java 8和11之间的区别。长话短说：这是Docker镜像的大小和部署时间。</strong></p>
+<p>基于Java 8构建的Docker镜像将明显小于基于Java 11的镜像。这也意味着Java 8项目的构建和部署时间将更快。</p>
+<blockquote>
+<p>Java 8-构建时间：约4分钟，镜像大小为 约180 MB</p>
+<p>Java 11-构建时间： 约14分钟，镜像大小约为480 MB</p>
+</blockquote>
+<p>注意： 在实际应用中，这些数字可能会有所不同。</p>
+<h2 id="Docker镜像"><a href="#Docker镜像" class="headerlink" title="Docker镜像"></a>Docker镜像</h2><p>正如在前面示例中已经看到的那样，由于Java版本的缘故，我们在应用程序镜像大小和构建时间方面存在巨大差异。其背后的实际原因是在Dockerfile中使用了不同的Docker镜像。</p>
+<p>如果我们再看一下Dockerfile，<strong>那么Java 11镜像很大的真正原因是因为它包含了没有经过验证/测试的open-jdk:11镜像的Alpine版本。</strong></p>
+<p>如果你不熟悉OpenJDK镜像版本，建议你阅读<a href="https://hub.docker.com/_/openjdk" target="_blank" rel="noopener">OpenJDK Docker官方文档</a>。在这里，你可以找到有关每个OpenJDK版本的镜像的说明。</p>
+<h3 id="备注：动态的变量"><a href="#备注：动态的变量" class="headerlink" title="备注：动态的变量"></a>备注：动态的变量</h3><p>在ENTRYPOINT 中，与环境相关的属性，我们只能写死，如下：</p>
+<pre><code class="hljs java">ENTRYPOINT [ “ java”，“ -Dspring.profiles.active = development”，“ -jar”，“ appdemo.jar” ]</code></pre>
+
+<p>为了使它动态，你希望将其简单地转换为：</p>
+<blockquote>
+<pre><code class="hljs java">ENTRYPOINT [ “ java”，“ -Dspring.profiles.active = $ SPRINT_ACTIVE_PROFILE”，“ -jar”，“ appdemo.jar” ]</code></pre>
+</blockquote>
+<p>以前，这是不可能的，<strong>但是幸运的是，这将在.gitlab-ci.yml中通过 ARG SPRING_ACTIVE_PROFILE修复。</strong></p>
+<h3 id="gitlab-ci-yml"><a href="#gitlab-ci-yml" class="headerlink" title="gitlab-ci.yml"></a>gitlab-ci.yml</h3><p>在编写此文件之前，要准备的东西很少。基本上，我们想要实现的是，只要推送代码，就会在相应的环境上自动部署。</p>
+<h4 id="创建-env文件和分支"><a href="#创建-env文件和分支" class="headerlink" title="创建.env文件和分支"></a>创建.env文件和分支</h4><p><strong>我们首先需要创建包含与环境相关的分支和.env文件。每个分支实际上代表我们的应用程序将运行的环境。</strong></p>
+<p>我们将在三个不同的环境中部署我们的应用程序：开发，测试和生产（ development, QA, and production ）。这意味着我们需要创建三个分支。我们的dev，QA和prod应用程序将在不同的服务器上运行，并且将具有不同的Docker容器标签，端口和SSH密钥。<strong>这就要求我们的gitlab-ci.yml文件将要是动态的。我们可以为每个环境创建单独的.env文件来解决该问题。</strong></p>
+<blockquote>
+<p>.develop.env</p>
+<p>.qa.env</p>
+<p>.master.env</p>
+</blockquote>
+<p>重要说明： 命名这些文件时，有一个简单的规则：使用GitLab分支来命名，因此文件名应如下所示：。<strong>$ BRANCH_NAME.env</strong></p>
+<p>例如，这是.develop.env文件。</p>
+<pre><code class="hljs shell">export SPRING_ACTIVE_PROFILE='development'
+export DOCKER_REPO='username/demo_app:dev'
+export APP_NAME='demo_app_dev'
+export PORT='8080'
+export SERVER_IP='000.11.222.33'
+export SERVER_SSH_KEY="$DEV_SSH_PRIVATE_KEY"</code></pre>
+
+<p>与.env文件有关的重要说明：</p>
+<ul>
+<li><strong>SPRING_ACTIVE_PROFILE：</strong>不言自明，我们要使用哪些Spring应用程序属性。 <strong>DOCKER_REPO：</strong>这是Docker镜像的存储库；在这里，我们唯一需要注意的是Docker image TAG，对于每种环境，我们将使用不同的标签，这意味着我们将使用dev，qa 和prod 标签。</li>
+</ul>
+<p>我们的Docker中心看起来像这样。</p>
+<p><img src="C:%5CUsers%5CAdministrator%5CPictures%5C1-2.png" srcset="/img/loading.gif" alt="1-2"></p>
+<p>如你所见，存在一个带有三个不同标签的存储库，每当将代码推送到GitLab分支上时，每个标签（应用程序版本）都会被更新。</p>
+<ul>
+<li><strong>APP_NAME：</strong> 此属性非常重要，它是对容器的命名。 如果你未设置此属性，则Docker将为你的容器随机命名。这可能是一个问题，因为你将无法以干净的方式停止运行容器。</li>
+<li>端口：这是我们希望运行Docker容器的端口。</li>
+<li><strong>SERVER_IP：</strong>应用程序使用的服务器IP。通常，每个环境都将位于不同的服务器上。</li>
+<li><strong>SERVER_SSH_KEY：</strong>这是我们已经在每台服务器上生成的SSH密钥。 $DEV_SSH_PRIVATE_KEY 实际上是来自GitLab存储库的变量。</li>
+</ul>
+<h3 id="创建GitLab变量"><a href="#创建GitLab变量" class="headerlink" title="创建GitLab变量"></a>创建GitLab变量</h3><p>最后需要做的是创建GitLab变量。</p>
+<p>打开你的GitLab存储库，然后转到：Settings -&gt; CI/CD。在 Variables部分中， 添加新变量：</p>
+<ul>
+<li><strong>DOCKER_USER：</strong>用于访问Docker Hub或其他镜像托管的用户名</li>
+<li><strong>DOCKER_PASSWORD：</strong> 用于访问镜像托管的密码</li>
+<li><strong>$ENV_SSH_PRIVATE_KEY：</strong> 先前在服务器上生成的SSH私钥。</li>
+</ul>
+<p>SSH KEY的重要说明：</p>
+<ul>
+<li>你需要复制完整的密钥值，包括： —– BEGIN RSA PRIVATE KEY —–和—– END RSA PRIVATE KEY —–</li>
+</ul>
+<p>最后，你的GitLab变量应如下所示。</p>
+<p><img src="C:%5CUsers%5CAdministrator%5CPictures%5C2-3.png" srcset="/img/loading.gif" alt="2-3"></p>
+<h3 id="创建gitlab-ci-yml文件"><a href="#创建gitlab-ci-yml文件" class="headerlink" title="创建gitlab-ci.yml文件"></a>创建gitlab-ci.yml文件</h3><p>最后，让我们创建将所有内容放在一起的文件。</p>
+<pre><code class="hljs java">services:
+  - docker:<span class="hljs-number">19.03</span><span class="hljs-number">.7</span>-dind
+stages:
+  - build jar
+  - build and push docker image
+  - deploy
+build:
+  image: maven:<span class="hljs-number">3.6</span><span class="hljs-number">.3</span>-jdk-<span class="hljs-number">11</span>-slim
+  stage: build jar
+  before_script:
+    - source .$&#123;CI_COMMIT_REF_NAME&#125;.env
+  script:
+    - mvn clean install -Dspring.profiles.active=$SPRING_ACTIVE_PROFILE &amp;&amp; mvn <span class="hljs-keyword">package</span> -B -e -Dspring.profiles.active=$SPRING_ACTIVE_PROFILE
+  artifacts:
+    paths:
+      - target<span class="hljs-comment">/*.jar</span>
+<span class="hljs-comment">docker build:</span>
+<span class="hljs-comment">  image: docker:stable</span>
+<span class="hljs-comment">  stage: build and push docker image</span>
+<span class="hljs-comment">  before_script:</span>
+<span class="hljs-comment">    - source .$&#123;CI_COMMIT_REF_NAME&#125;.env</span>
+<span class="hljs-comment">  script:</span>
+<span class="hljs-comment">    - docker build --build-arg SPRING_ACTIVE_PROFILE=$SPRING_ACTIVE_PROFILE -t $DOCKER_REPO .</span>
+<span class="hljs-comment">    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD docker.io</span>
+<span class="hljs-comment">    - docker push $DOCKER_REPO</span>
+<span class="hljs-comment">deploy:</span>
+<span class="hljs-comment">  image: ubuntu:latest</span>
+<span class="hljs-comment">  stage: deploy</span>
+<span class="hljs-comment">  before_script:</span>
+<span class="hljs-comment">    - 'which ssh-agent || ( apt-get update -y &amp;&amp; apt-get install openssh-client -y )'</span>
+<span class="hljs-comment">    - eval $(ssh-agent -s)</span>
+<span class="hljs-comment">    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -</span>
+<span class="hljs-comment">    - mkdir -p ~/.ssh</span>
+<span class="hljs-comment">    - chmod 700 ~/.ssh</span>
+<span class="hljs-comment">    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" &gt; ~/.ssh/config</span>
+<span class="hljs-comment">    - source .$&#123;CI_COMMIT_REF_NAME&#125;.env</span>
+<span class="hljs-comment">  script:</span>
+<span class="hljs-comment">    - ssh root@$SERVER "docker login -u $DOCKER_USER -p $DOCKER_PASSWORD docker.io; docker stop $APP_NAME; docker system prune -a -f; docker pull $DOCKER_REPO; docker container run -d --name $APP_NAME -p $PORT:8080 -e SPRING_PROFILES_ACTIVE=$SPRING_ACTIVE_PROFILE $DOCKER_REPO; docker logout"</span></code></pre>
+
+<p>让我们解释一下这里发生了什么：</p>
+<pre><code class="hljs java">services:
+  - docker:<span class="hljs-number">19.03</span><span class="hljs-number">.7</span>-dind</code></pre>
+
+<p>这是一项服务，使我们可以在Docker中使用Docker。在Docker中运行Docker通常不是一个好主意，但是对于此用例来说，这是完全可以的，因为我们将构建镜像并将其推送到存储库中。</p>
+<pre><code class="hljs shell">stages:
+  - build jar
+  - build and push docker image
+  - deploy</code></pre>
+
+<p><strong>对于每个gitlab-ci.yml文件，必须首先定义执行步骤。脚本将按照步骤定义的顺序执行。</strong></p>
+<p>在每个步骤，我们都必须添加以下部分：</p>
+<pre><code class="hljs shell">before_script:
+ - source .$&#123;CI_COMMIT_REF_NAME&#125;.env</code></pre>
+
+<p>这只是预先加载之前创建的 env. files文件。根据正在运行的分支来自动注入变量。（这就是为什么我们必须使用分支名称来命名.env文件的原因）</p>
+<p>这些是我们部署过程中的执行步骤。</p>
+<p><img src="C:%5CUsers%5CAdministrator%5CPictures%5C3-2.png" srcset="/img/loading.gif" alt="3-2"></p>
+<p>如你所见，，有三个带有绿色复选标记的圆圈，这表示所有步骤均已成功执行。</p>
+<pre><code class="hljs shell">build:
+  image: maven:3.6.3-jdk-11-slim
+  stage: build jar
+  before_script:
+    - source .$&#123;CI_COMMIT_REF_NAME&#125;.env
+  script:
+    - mvn clean install -Dspring.profiles.active=$SPRING_ACTIVE_PROFILE &amp;&amp; mvn package -B -e -Dspring.profiles.active=$SPRING_ACTIVE_PROFILE
+  artifacts:
+    paths:
+      - target/*.jar</code></pre>
+
+<p>这是执行第一步骤代码的一部分，构建了一个jar文件，该文件可以下载。这实际上是一个可选步骤，仅用于演示构建jar并从GitLab下载它是多么容易。</p>
+<p><strong>第二步骤是在Docker存储库中构建并推送Docker镜像。</strong></p>
+<pre><code class="hljs java">docker build:
+  image: docker:stable
+  stage: build and push docker image
+  before_script:
+    - source .$&#123;CI_COMMIT_REF_NAME&#125;.env
+  script:
+    - docker build --build-arg SPRING_ACTIVE_PROFILE=$SPRING_ACTIVE_PROFILE -t $DOCKER_REPO .
+    - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD docker.io
+    - docker push $DOCKER_REPO</code></pre>
+
+<p>这一步骤，我们不得不使用docker:19.03.7-dind服务。如你所见，我们使用的是最新的稳定版本的Docker，我们只是在为适当的环境构建镜像，然后对Dockerhub进行身份验证并推送镜像。</p>
+<p>我们脚本的最后一部分是：</p>
+<pre><code class="hljs bash">deploy:
+  image: ubuntu:latest
+  stage: deploy
+  before_script:
+    - <span class="hljs-string">'which ssh-agent || ( apt-get update -y &amp;&amp; apt-get install openssh-client -y )'</span>
+    - <span class="hljs-built_in">eval</span> $(ssh-agent -s)
+    - <span class="hljs-built_in">echo</span> <span class="hljs-string">"<span class="hljs-variable">$SSH_PRIVATE_KEY</span>"</span> | tr -d <span class="hljs-string">'\r'</span> | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - <span class="hljs-built_in">echo</span> -e <span class="hljs-string">"Host *\n\tStrictHostKeyChecking no\n\n"</span> &gt; ~/.ssh/config
+    - <span class="hljs-built_in">source</span> .<span class="hljs-variable">$&#123;CI_COMMIT_REF_NAME&#125;</span>.env
+  script:
+    - ssh root@<span class="hljs-variable">$SERVER</span> <span class="hljs-string">"docker stop <span class="hljs-variable">$APP_NAME</span>; docker system prune -a -f; docker pull <span class="hljs-variable">$DOCKER_REPO</span>; docker container run -d --name <span class="hljs-variable">$APP_NAME</span> -p <span class="hljs-variable">$PORT</span>:8080 -e SPRING_PROFILES_ACTIVE=<span class="hljs-variable">$SPRING_ACTIVE_PROFILE</span> <span class="hljs-variable">$DOCKER_REPO</span>"</span></code></pre>
+
+<p>在此步骤中，我们使用Ubuntu Docker镜像，因此我们可以SSH到我们的应用程序服务器并运行一些Docker命令。其中的部分代码 before_script大部分来自<a href="https://docs.gitlab.com/ee/ci/ssh_keys/" target="_blank" rel="noopener">官方文档</a>，但是，当然，我们可以对其进行一些调整以满足我们的需求。为不对私钥进行验证，添加了以下代码行：</p>
+<pre><code class="hljs bash">- <span class="hljs-built_in">echo</span> -e <span class="hljs-string">"Host *\n\tStrictHostKeyChecking no\n\n"</span> &gt; ~/.ssh/config</code></pre>
+
+<p>你也可以参考<a href="https://docs.gitlab.com/ee/ci/ssh_keys/#verifying-the-ssh-host-keys" target="_blank" rel="noopener">指南</a>验证私钥。 如你在最后阶段的脚本部分中所见，我们正在执行一些Docker命令。</p>
+<ol>
+<li><strong>停止正在运行的Docker容器：</strong>docker stop $APP_NAME。（这就是我们要在.env文件中定义APP_NAME的原因 ）</li>
+<li><strong>删除所有未运行的Docker镜像：</strong> docker system prune -a -f，这实际上不是强制性的，但我想删除服务器上所有未使用的镜像。</li>
+<li><strong>拉取最新版本的Docker镜像</strong>（该镜像是在上一个阶段中构建并推送的）。</li>
+<li>最后，<strong>使用以下命令运行Docker镜像：</strong></li>
+</ol>
+<pre><code class="hljs java">docker container run -d --name $APP_NAME -p $PORT:<span class="hljs-number">8080</span> -e SPRING_PROFILES_ACTIVE=$SPRING_ACTIVE_PROFILE $DOCKER_REPO</code></pre>
+
+
+
+<p>作者：王延飞</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/05/29/5%E6%AD%A5%E5%AE%9E%E7%8E%B0%E8%A7%84%E6%A8%A1%E5%8C%96%E7%9A%84Kubernetes-CI-CD-%E6%B5%81%E6%B0%B4%E7%BA%BF/">
+                        <span class="hidden-mobile">5步实现规模化的Kubernetes CI/CD 流水线</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: 'article.markdown-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "使用GitLab CI和Docker自动部署SpringBoot应用&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

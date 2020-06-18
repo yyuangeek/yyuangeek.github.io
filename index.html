@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="YYUAN">
+  <meta name="keywords" content="">
+  <title>YuanTech</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <header style="height: 100vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>YYUAN</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+          </div>
+
+          
+            <div class="scroll-down-bar">
+              <i class="iconfont icon-arrowdown"></i>
+            </div>
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      <div class="container nopadding-md">
+        <div class="py-5" id="board"
+          style=margin-top:0>
+          
+          <div class="container">
+            <div class="row">
+              <div class="col-12 col-md-10 m-auto">
+                
+
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/06/18/%E4%BD%BF%E7%94%A8GitLab%20CI%E5%92%8CDocker%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2SpringBoot%E5%BA%94%E7%94%A8/">使用GitLab CI和Docker自动部署SpringBoot应用</a>
+
+      <a href="/2020/06/18/%E4%BD%BF%E7%94%A8GitLab%20CI%E5%92%8CDocker%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2SpringBoot%E5%BA%94%E7%94%A8/" class="index-excerpt">
+        
+        
+          
+        
+        <div>Docker和Spring Boot是非常流行的组合，我们将利用GitLab CI的优势，并在应用程序服务器上自动构建，推送和运行Docker镜像。
+GitLab CIGitlab CI/CD服务是GitLab的一部分。开发人员将代码推送到GitLab存储库时，GitLab CI就会在用户指定的环境中自动构建，测试和存储最新的代码更改。
+选择GitLab CI的一些主要原因：
+
+易于学习，使用和可</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-18
+          </div>
+        
+        
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/05/29/5%E6%AD%A5%E5%AE%9E%E7%8E%B0%E8%A7%84%E6%A8%A1%E5%8C%96%E7%9A%84Kubernetes-CI-CD-%E6%B5%81%E6%B0%B4%E7%BA%BF/">5步实现规模化的Kubernetes CI/CD 流水线</a>
+
+      <a href="/2020/05/29/5%E6%AD%A5%E5%AE%9E%E7%8E%B0%E8%A7%84%E6%A8%A1%E5%8C%96%E7%9A%84Kubernetes-CI-CD-%E6%B5%81%E6%B0%B4%E7%BA%BF/" class="index-excerpt">
+        
+        
+          
+        
+        <div>一、背景在近几年，Kubernetes迅速成为了容器编排的事实上的开源标准。与虚拟机不同，Kubernetes在抽象化基础架构的同时可靠地大规模编排容器，这可以帮助开发人员将工作负载与基础架构的复杂性分开。Kubernetes是CI/CD自动化的理想选择，因为它提供了许多内置功能，这些功能使应用程序部署实现标准化和可重用，提高了开发人员的生产力，并加快了云原生应用程序的采用。
+Platform9是</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-05-29
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/K8s-CI-CD-Platform9-Artifactory-Helm/">K8s, CI, CD, Platform9, Artifactory, Helm</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/05/29/%E5%BC%80%E5%8F%91%E8%80%85%E5%A6%82%E4%BD%95%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA%E6%9C%AC%E5%9C%B0-Kubernetes-%E9%9B%86%E7%BE%A4%EF%BC%9FMinikube%E8%B6%9F%E5%9D%91%E8%AE%B0%E5%BD%95/">开发者如何快速搭建本地 Kubernetes 集群？Minikube趟坑记录</a>
+
+      <a href="/2020/05/29/%E5%BC%80%E5%8F%91%E8%80%85%E5%A6%82%E4%BD%95%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA%E6%9C%AC%E5%9C%B0-Kubernetes-%E9%9B%86%E7%BE%A4%EF%BC%9FMinikube%E8%B6%9F%E5%9D%91%E8%AE%B0%E5%BD%95/" class="index-excerpt">
+        
+        
+          
+        
+        <div>一、背景为啥要在本地搭建 Kubernetes 集群？因为开发者可以在本地快速验证自己实现的功能，接口。众所周知，由于 Kubernetes 部署较为复杂，使得广大开发者和运维人员学习和试用 Kubernetes 的门槛很高，光是部署一套 Kubernetes 集群，就需要部署大量的组件，花费精力较大。为了降低用户体验 Kubernetes 的门槛，Minikube 项目应运而生，它是 Githu</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-05-29
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Cloudnative-K8s-Minikube%EF%BC%8CJenkins/">Cloudnative, K8s, Minikube，Jenkins</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/05/29/%E4%BD%BF%E7%94%A8DevOps%E4%BB%8E%E4%BC%98%E7%A7%80%E5%88%B0%E5%8D%93%E8%B6%8A/">使用DevOps从优秀到卓越</a>
+
+      <a href="/2020/05/29/%E4%BD%BF%E7%94%A8DevOps%E4%BB%8E%E4%BC%98%E7%A7%80%E5%88%B0%E5%8D%93%E8%B6%8A/" class="index-excerpt">
+        
+        
+          
+        
+        <div>DevOps一直不断发展。自从2009年有了这个此概念以来，DevOps的发展状态就以每年指数级的速度增长。在2019年飞速发展的过程中，各种规模的组织（从企业到初创企业）都对DevOps充满热情。每个组织都有自己的DevOps实践经历。其中一些DevOps实践经历尚未开始，一些实践还在起步阶段，有些实践已经成熟，有些实践已经达到极致。与其他实践不同，DevOps实践永无止境，因为它涉及持续改进。</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-05-29
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/DevOps-SDO/">DevOps,SDO</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/05/29/%E4%BD%BF%E7%94%A8Kubeadm%E5%9C%A8%E5%A4%96%E9%83%A8OpenStack%E4%BA%91%E5%8E%82%E5%95%86%E9%83%A8%E7%BD%B2Kubernetes%E9%9B%86%E7%BE%A4/">使用Kubeadm在外部OpenStack云厂商部署Kubernetes集群</a>
+
+      <a href="/2020/05/29/%E4%BD%BF%E7%94%A8Kubeadm%E5%9C%A8%E5%A4%96%E9%83%A8OpenStack%E4%BA%91%E5%8E%82%E5%95%86%E9%83%A8%E7%BD%B2Kubernetes%E9%9B%86%E7%BE%A4/" class="index-excerpt">
+        
+        
+          
+        
+        <div>本文档描述了如何在CentOS上使用kubeadm安装单个控制面板节点（主节点）的Kubernetes集群（ v1.15 ），然后部署到一个外部OpenStack云厂商，并且使用Cinder CSI插件将Cinder存储卷用作Kubernetes中的持久卷。
+OpenStack的准备工作Kubernetes集群要在OpenStack VM上运行，因此让我们首先需要在OpenStack中创建一些东西</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-05-29
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/openstack-K8s-kubeadm-CentOS/">openstack, K8s, kubeadm, CentOS</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/05/29/%E4%BD%A0%E7%9A%84Kubernetes%E9%9B%86%E7%BE%A4%E5%81%A5%E5%BA%B7%E5%90%97-%E8%BF%99%E9%87%8C%E6%9C%895%E7%A7%8D%E6%A3%80%E9%AA%8C%E6%96%B9%E6%B3%95/">你的Kubernetes集群健康吗?这里有5种检验方法</a>
+
+      <a href="/2020/05/29/%E4%BD%A0%E7%9A%84Kubernetes%E9%9B%86%E7%BE%A4%E5%81%A5%E5%BA%B7%E5%90%97-%E8%BF%99%E9%87%8C%E6%9C%895%E7%A7%8D%E6%A3%80%E9%AA%8C%E6%96%B9%E6%B3%95/" class="index-excerpt">
+        
+        
+          
+        
+        <div>Kubernetes 是一门极其智能化的科学技术，但是如果搞错了方向，它就会以一种非预期的方式响应. 对于大部分 “聪明的” 科技来说， 其智能化程度取决于操作者。 为了通过使用Kubernetes组建团队来达到成功巅峰，其中最关键的是每一位组员能清晰地掌握Kubernetes 集群。这里有5种方法可以使工程师在建立Kubernetes集群时能最好的鉴定出任何未结的任务，并且尽可能确保负载在最健康</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-05-29
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/cloudnative-K8s-test-Pod/">cloudnative, K8s, test, Pod</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/05/28/%E4%BD%BF%E7%94%A8Spring-Boot-Operator%E9%83%A8%E7%BD%B2SpringBoot%E5%88%B0K8S/">使用Spring Boot Operator部署SpringBoot到K8S</a>
+
+      <a href="/2020/05/28/%E4%BD%BF%E7%94%A8Spring-Boot-Operator%E9%83%A8%E7%BD%B2SpringBoot%E5%88%B0K8S/" class="index-excerpt">
+        
+        
+          
+        
+        <div>前言在Kubernetes中部署spring boot应用整体上来说是一件比较繁琐的事情，而Spring Boot Operator则能带给你更清爽简单的体验。
+Spring Boot Operator基于Kubernetes的custom resource definitions (CRDs)扩展API进行的开发。
+打包Docker镜像在讲部署之前我们需要先将我们的SpringBoot应用打包成</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-05-28
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/springboot-k8s-docker/">springboot,k8s,docker</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/05/28/%E6%89%8B%E6%8A%8A%E6%89%8B%E4%BB%8E%E9%9B%B6%E6%90%AD%E5%BB%BA%E4%B8%8E%E8%BF%90%E8%90%A5%E7%94%9F%E4%BA%A7%E7%BA%A7%E7%9A%84-Kubernetes-%E9%9B%86%E7%BE%A4%E4%B8%8E-KubeSphere/">手把手从零搭建与运营生产级的 Kubernetes 集群与 KubeSphere</a>
+
+      <a href="/2020/05/28/%E6%89%8B%E6%8A%8A%E6%89%8B%E4%BB%8E%E9%9B%B6%E6%90%AD%E5%BB%BA%E4%B8%8E%E8%BF%90%E8%90%A5%E7%94%9F%E4%BA%A7%E7%BA%A7%E7%9A%84-Kubernetes-%E9%9B%86%E7%BE%A4%E4%B8%8E-KubeSphere/" class="index-excerpt">
+        
+        
+          
+        
+        <div>
+本文将从零开始，在干净的机器上安装 Docker、Kubernetes (使用 kubeadm)、Calico、Helm、NFS StorageClass，通过手把手的教程演示如何搭建一个高可用生产级的 Kubernetes，并在 Kubernetes 集群之上安装开源的 KubeSphere 容器平台可视化运营集群环境。
+一、准备环境开始部署之前，请先确定当前满足如下条件，本次集群搭建，所有机</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-05-28
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/k8s-cloudnative-docker/">k8s,cloudnative,docker</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/05/28/%E5%9C%A8Kubernetes%E4%B8%8A%E9%83%A8%E7%BD%B2Elasticsearch%E9%9B%86%E7%BE%A4/">在Kubernetes上部署Elasticsearch集群</a>
+
+      <a href="/2020/05/28/%E5%9C%A8Kubernetes%E4%B8%8A%E9%83%A8%E7%BD%B2Elasticsearch%E9%9B%86%E7%BE%A4/" class="index-excerpt">
+        
+        
+          
+        
+        <div>
+尝试在上一篇文章中搭建的K8S集群上部署ES集群，去年年中的时候，未来搭建ELK，学习过一段时间的ES，在虚拟机里搭建过简单的集群环境。现在K8S里再次搭建的时候，发现当时学过的很多概念都生疏了，又找到之前的学习记录复习了一遍——好记忆不如烂笔头。言归正传
+
+1、环境清单1.1、系统清单IP                              Hostname    Role       </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-05-28
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/IT/">IT</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "Welcome to my space - YYUAN&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

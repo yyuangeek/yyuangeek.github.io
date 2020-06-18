@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="YYUAN">
+  <meta name="keywords" content="">
+  <title>开发者如何快速搭建本地 Kubernetes 集群？Minikube趟坑记录 - YuanTech</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css" />
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>YYUAN</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-05-29 22:44">
+      May 29, 2020 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.2k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      13
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h1 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a><strong>一、背景</strong></h1><p>为啥要在本地搭建 Kubernetes 集群？因为开发者可以在本地快速验证自己实现的功能，接口。众所周知，由于 Kubernetes 部署较为复杂，使得广大开发者和运维人员学习和试用 Kubernetes 的门槛很高，光是部署一套 Kubernetes 集群，就需要部署大量的组件，花费精力较大。为了降低用户体验 Kubernetes 的门槛，Minikube 项目应运而生，它是 Github 上的一个开源项目，提供了一键安装的 Kubernetes 本地集群，支持 MacOS，Linux，Windows。</p>
+<p><strong>谁需要 Minikube</strong> <strong>？</strong></p>
+<ul>
+<li><strong>本地开发 Kubernetes</strong> <strong>应用</strong></li>
+<li><strong>离线开发 Kubernetes</strong> <strong>应用</strong></li>
+<li><strong>体验最新版 Kubernetes</strong></li>
+</ul>
+<p>如果你有以上需求，可以使用 Minikube。 Minikube 大大简化了的开发者部署自己的服务到 Kubernetes，因为这个本地集群可以部署在自己的笔记本，亲测 8C16G笔记本跑起来很轻松，随时可以启停，不依赖网络连接。开发者可以在自己的笔记本里，运行Kubernetes 的 Pods，快速验证自己的服务功能是否生效。</p>
+<p>被纳入到了 Kubernetes 官方项目里-<a href="https://github.com/kubernetes/minikube。" target="_blank" rel="noopener">https://github.com/kubernetes/minikube。</a></p>
+<h1 id="二、搭建趟坑之旅"><a href="#二、搭建趟坑之旅" class="headerlink" title="二、搭建趟坑之旅"></a><strong>二、搭建趟坑之旅</strong></h1><ul>
+<li>Mac 环境安装：</li>
+</ul>
+<p>使用官方地址进行一键安装：</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/1-4.png" srcset="/img/loading.gif" alt="img"></p>
+<ul>
+<li><strong>坑点</strong> <strong>：二进制包下载需翻墙</strong></li>
+</ul>
+<p>官方文档给的下载地址需要访问谷歌的服务器storage.googleapis.com，有时候下载容易失败，可以切换到阿里云的下载地址：</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/2-5.png" srcset="/img/loading.gif" alt="img"></p>
+<p>该地址亲测可用。</p>
+<ul>
+<li><strong>启动 Minikube：</strong></li>
+</ul>
+<p>使用官网文档启动：Minikube Start,集群可以正常启动。</p>
+<ul>
+<li><strong>坑点</strong> <strong>：镜像源指向了io</strong></li>
+</ul>
+<p>启动Minikube 之后，运行 pod 一般都会失败，因为 Minikube 默认将它的镜像中心默认指向了 gcr.io,从这里下载过镜像的人都被它深深伤害过，可以在启动参数里指定镜像源和私有镜像库。</p>
+<ul>
+<li><strong>配置私有镜像仓库：</strong></li>
+</ul>
+<p>根据官方文档，在启动时加入参数：” –insecure-registry”</p>
+<p>minikube start –insecure-registry “docker-release-local.demo.jfrog.com” –registry-mirror=<a href="https://registry.docker-cn.com" target="_blank" rel="noopener">https://registry.docker-cn.com</a></p>
+<p>这里–insecure-registry配置的是JFrog 的本地私有 Artifactory Docker 镜像仓库，一般企业内部都有私有镜像库。</p>
+<ul>
+<li><strong>坑点 ：指定私有镜像库不生效</strong></li>
+</ul>
+<p>笔者使用的Minikube v1.2.0 Mac 版本在启动时–insecure-registry并不生效，可以找到主机上 minikube 配置文件目录下的文件进行修改。打开文件：~/.minikube/machines/minikube/config.json，增加记录” docker-release-local.demo.jfrog.com”</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/3-3.png" srcset="/img/loading.gif" alt="img"></p>
+<p>配置完之后镜像拉取默认会从私有镜像仓库寻找镜像。</p>
+<ul>
+<li><strong>从私有镜像仓库拉取镜像</strong></li>
+</ul>
+<p>启动 Minikube 后，在 Kubernetes 集群里创建镜像中心的密钥“regcred”：</p>
+<p>kubectl create secret docker-registry regcred –docker-server=docker-release-local.demo.jfrog.com –docker-username=admin –docker-password=*** –docker-email=wq@jfrogchina.com</p>
+<p>在微服务的 Deployment yaml 文件里使用这个密钥即可让 Pod 通过密钥登录私有镜像仓库，拉取镜像。</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/4-4.png" srcset="/img/loading.gif" alt="img"></p>
+<p>配置好私有镜像仓库之后，你的Pod 镜像拉取速度是秒级的。</p>
+<ul>
+<li><strong>启动应用-Jenkins</strong></li>
+</ul>
+<p>写一个 Jenkins 的部署 yaml 文件，让它运行在 Kubernetes 集群里。</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/5-2.png" srcset="/img/loading.gif" alt="img"></p>
+<p>Jenkins 可以正常运行。</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/6-3.png" srcset="/img/loading.gif" alt="img"></p>
+<ul>
+<li><strong>坑点：Pod 重启时候，Jenkins 数据没了？</strong></li>
+</ul>
+<p>很多应用的配置文件是需要放到 Pod 之外进行管理的，比如 Jenkins。这就需要 Minikube 支持挂载目录。Minikube 官方提供了对挂载目录的支持，默认/data 目录是在重启 Minikube 之后，文件也会保留的目录，可以在/data 目录下创建Jenkins_home目录，然后在Kubernetes 里声明 PV，类型为 hostPath，挂载这个目录。</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/7-2.png" srcset="/img/loading.gif" alt="img"></p>
+<p>声明好这个持久化卷之后，就可以在 Jenkins 的部署 yaml 文件里通过 PVC 来使用这个目录。</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/8-1.png" srcset="/img/loading.gif" alt="img"></p>
+<p>上图可以看到我们把 Jenkins pod 里的/var/Jenkins_home 目录映射到了 Pod 外部，也就是 Minikube 主机上的/data/Jenkins-home,这样即使 Pod 重启，Minikube 重启也不会丢失数据。</p>
+<ul>
+<li><strong>坑点：挂载目录写失败</strong></li>
+</ul>
+<p>当挂创建好/data/Jenkins-home目录之后，默认只有 root 用户有写权限，Jenkins Pod 启动起来之后，会因为无法写入配置文件而启动失败，此时需要将/data/Jenkins-home的权限赋予 docker 用户，再次启动 pod 即可正常运行。</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/9-1.png" srcset="/img/loading.gif" alt="img"></p>
+<ul>
+<li><strong>访问服务</strong></li>
+</ul>
+<p>当 Jenkins Pod 运行起来之后，可以通过 Jenkins service 的 nodePort 暴露的 31081进行访问，这里注意 ip 是 Minikube 的 ip 地址:</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/10-1.png" srcset="/img/loading.gif" alt="img"></p>
+<h1 id="三、小结"><a href="#三、小结" class="headerlink" title="三、小结"></a><strong>三、小结</strong></h1><p><strong>通过 Minikube</strong> <strong>能够实现开发者微服务的本地快速部署，对自己开发的功能，接口进行本地的快速验证，大大提升开发者的交付质量和效率。</strong></p>
+<h1 id="四、附录"><a href="#四、附录" class="headerlink" title="四、附录"></a><strong>四、附录</strong></h1><p><strong>文中用到的代码仓库在这里，欢迎想动手实践的同学进行 clone</strong> <strong>：</strong><a href="https://github.com/alexwang66/sample-microservices-k8s" target="_blank" rel="noopener">https://github.com/alexwang66/sample-microservices-k8s</a></p>
+<p>作者： JFrogchina</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Cloudnative-K8s-Minikube%EF%BC%8CJenkins/">Cloudnative, K8s, Minikube，Jenkins</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/05/29/5%E6%AD%A5%E5%AE%9E%E7%8E%B0%E8%A7%84%E6%A8%A1%E5%8C%96%E7%9A%84Kubernetes-CI-CD-%E6%B5%81%E6%B0%B4%E7%BA%BF/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">5步实现规模化的Kubernetes CI/CD 流水线</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/05/29/%E4%BD%BF%E7%94%A8DevOps%E4%BB%8E%E4%BC%98%E7%A7%80%E5%88%B0%E5%8D%93%E8%B6%8A/">
+                        <span class="hidden-mobile">使用DevOps从优秀到卓越</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: 'article.markdown-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "开发者如何快速搭建本地 Kubernetes 集群？Minikube趟坑记录&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

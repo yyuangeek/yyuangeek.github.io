@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="YYUAN">
+  <meta name="keywords" content="">
+  <title>5步实现规模化的Kubernetes CI/CD 流水线 - YuanTech</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css" />
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>YYUAN</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-05-29 22:49">
+      May 29, 2020 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.1k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      22
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h1 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h1><p>在近几年，Kubernetes迅速成为了容器编排的事实上的开源标准。与虚拟机不同，Kubernetes在抽象化基础架构的同时可靠地大规模编排容器，这可以帮助开发人员将工作负载与基础架构的复杂性分开。Kubernetes是CI/CD自动化的理想选择，因为它提供了许多内置功能，这些功能使应用程序部署实现标准化和可重用，提高了开发人员的生产力，并加快了云原生应用程序的采用。</p>
+<p>Platform9是成立于2013年的云服务提供商，能够提供业界唯一由SaaS管理的混合云解决方案，使用户能够快速采用云技术并在私有部署或公共云中的任何基础架构上一致地管理VM、Kubernetes和无服务器功能。Platform9提供的Kubernetes解决方案也是业界的佼佼者。</p>
+<p>在2019年巴塞罗那举行的KubeCon + CloudNativeCon大会上，Platform9与1000多名与会者进行了互动，有近500名与会者参与了Kubernetes的相关调查。下图列出了关于最常见的Kubernetes应用场景的调查结果：</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/1-1.png" srcset="/img/loading.gif" alt="img"></p>
+<p>其中，基于Kubernetes的CI/CD自动化是最为广泛的用例，专注于帮助开发人员更快地构建和交付应用程序。但是，在具有全自动和可重复的CI/CD流水线的生产环境中运行Kubernetes（k8s）以及持续的安全检查会带来新的挑战，包括集成的复杂性，持续的产品更新/回滚、自运维、生命周期管理等等。</p>
+<p>解决这些挑战并没有想象中的困难，本文将介绍Platform9如何利用JFrog的产品在Kubernetes上快速实现CI/CD自动化并将其推广到整个组织的方法。</p>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="二、使用Artifactory和Helm的5步Kubernetes-CI-CD流水线"><a href="#二、使用Artifactory和Helm的5步Kubernetes-CI-CD流水线" class="headerlink" title="二、使用Artifactory和Helm的5步Kubernetes CI / CD流水线"></a>二、使用Artifactory和Helm的5步Kubernetes CI / CD流水线</h1><p>在Platform9提供的方案中，JFrog Artifactory作为微服务的Docker注册表（或多个注册表），是构建CI/CD流水线不可或缺的一部分。同时，使用Artifactory作为Helm Chart存储库，进一步使该制品管理仓库能够提供将容器部署到k8s集群所需的所有集成资源。</p>
+<p>Artifactory还可以作为远程依赖的代理仓库，例如npm、Maven、Gradle和Go等，实现安全的Kubernetes注册表，使您能够跟踪系统中端到端的内容、依赖关系，以及与其他Docker镜像的关系。</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/2-2.png" srcset="/img/loading.gif" alt="img"></p>
+<p><strong>5步实现Kubernetes CI/CD流水线：</strong></p>
+<ul>
+<li><strong>步骤1:</strong> 使用Artifactory中代理的注册表来开发微服务。生成的应用程序包可以是.war或.jar文件；</li>
+<li><strong>步骤2:</strong> 在Ubuntu上使用Tomcat和Java-8创建Docker框架作为基础镜像。将此镜像推送到Artifactory中的Docker注册表中，JFrog Xray也会对其进行扫描，以确保安全性和许可证合规性。</li>
+<li><strong>步骤3:</strong> 通过将.war或.jar文件添加到Docker框架中，为微服务创建Docker镜像，将该镜像推送到Artifactory中的Docker注册表中，并通过Xray对其进行扫描。</li>
+<li><strong>步骤4:</strong> 为微服务创建Helm Chart，并将其推送到Artifactory中的Helm存储库。</li>
+<li><strong>步骤5:</strong> 使用Helm Chart将微服务从安全的Docker注册表部署到Kubernetes集群。</li>
+</ul>
+<p>在上述流水线当中，除了负责制品仓库管理，Artifactory还可以提供质量的可审核性，因为它捕获了整个CI/CD流程中产生的所有大量有价值的元数据，包含：</p>
+<ul>
+<li>构建和环境信息</li>
+<li>模块的依赖关系</li>
+<li>CI服务器，如Jenkins，提供的相关信息</li>
+<li>发布模块及其依赖的详细许可证分析</li>
+<li>发布历史信息等</li>
+</ul>
+<p>使用Artifactory，可以跟踪负责生成应用程序层（例如WAR文件）的CI任务，该应用程序层是Docker镜像层的一部分。通过比较两次构建，可以显示构建之间的差异，从而轻松跟踪哪个构建发布到了Docker镜像的哪个层，近而继续跟踪到代码的提交。</p>
+<h1 id="三、流水线特性解析"><a href="#三、流水线特性解析" class="headerlink" title="三、流水线特性解析"></a>三、流水线特性解析</h1><p><strong>3.1 JFrog Artifactory和Xray确保软件交付的自动化</strong></p>
+<p>Artifactory是一个通用的制品仓库管理平台，无论组织中的微服务在哪里运行，它都可以满足所有CI/CD的需求。Artifactory通过提供完全的Docker兼容性，使开发人员能够将容器化的微服务部署到Kubernetes集群中。将应用程序包推送到Artifactory仓库后，您可以在开发、测试和发布阶段继续验证和升级您的容器，最后将其部署到Kubernetes中的生产集群。如之前的分析，Artifactory还为所有应用程序包提供了完整的可审核性和可追溯性。</p>
+<p>JFrog Xray对Docker镜像执行深度递归扫描，并识别所有层和依赖项中的安全漏洞。它还会检查以确保所有软件组件的许可证均符合组织的策略。这有助于阻止易受攻击且不合规的软件投入生产。而且，Xray提供的持续扫描能力，可以确保发现新问题或更改策略时的持续安全性。</p>
+<p><strong>3.2 Helm Charts使CI/CD工具部署自动化</strong></p>
+<p>一旦您的Kubernetes基础架构启动并运行，Kubernetes Helm便使您能够通过轻松安装、更新和删除来快速可靠地配置容器应用程序。它为开发人员提供了一种打包应用程序并与Kubernetes社区共享的工具。它使软件供应商只需按一下按钮即可提供其容器化的应用程序。通过一个命令或单击几下鼠标，用户就可以为开发测试或生产环境安装Kubernetes应用程序。大多数流行的CI/CD工具集都可以通过Helm chart获得。</p>
+<p>Platform9应用目录为Helm图表提供了易于访问的按钮式部署。您可以使用App Catalog UI来选择和部署您喜欢的CI/CD流水线工具（例如，Jenkins、Spinnaker、Artifactory、Xray等）。您可以搜索，一键部署或配置它。</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/3-1.png" srcset="/img/loading.gif" alt="img"></p>
+<h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="四、Platform9的托管Kubernetes服务消除了操作复杂性"><a href="#四、Platform9的托管Kubernetes服务消除了操作复杂性" class="headerlink" title="四、Platform9的托管Kubernetes服务消除了操作复杂性"></a>四、Platform9的托管Kubernetes服务消除了操作复杂性</h1><p>如果您要解决的主要业务问题，与提高开发人员的生产力，将软件更快地推向市场，以及在生产环境中运行可靠的应用程序有关，那么您是否值得花时间处理运维Kubernetes的麻烦和复杂性？您是否拥有人员和技能来工作和运维大型Kubernetes集群？</p>
+<p>运维您自己的大规模Kubernetes基础架构令人生畏。错误选择的后果是持久的，并且会影响应用程序的可用性、性能和敏捷性。虽然在短期内内部构建解决方案可能会更便宜，但您的设计质量可能较低，或者存在一些缺陷。这些缺陷在您投入生产后才会意识到，从而最终会花费更多的钱。</p>
+<p>虽然安装和管理Kubernetes不会推动业务向前发展，但快速为客户部署新的应用程序和版本却可以。对于开发人员，Kubernetes的最终用户，平台可用性是关键。他们不在乎是谁建造它或如何建造它的：他们只是想动手实践它，并使其运转良好。</p>
+<p>尽管开发人员不关心集群的实现细节或其运维状态，但是仍然需要有人进行运维工作以确保集群是最新、健康且安全的。Platform9管理您的Kubernetes环境，为您提供全自动运维，并在裸机、VMware、公共云或边缘节点上实现99.9％的SLA。这使您的DevOps团队可以腾出时间专注于重要的事情：通过更快地构建更好的应用程序来响应客户需求。</p>
+<p><img src="https://www.kubernetes.org.cn/img/2019/12/4-2.png" srcset="/img/loading.gif" alt="img"></p>
+<h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h1><p>通过上述Platform9推荐的解决方案来看，基于JFrog的Artifactory和Xray，结合Helm Chart，能够方便、快捷、清晰地搭建适用于规模化Kubernetes集群的CI/CD自动化流水线。该方案在保证应用构建和交付的快速、安全、可重复的同时，还能为所有交付的应用提供完整的可审核性和可追溯性。</p>
+<p>作者： JFrogchina</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/K8s-CI-CD-Platform9-Artifactory-Helm/">K8s, CI, CD, Platform9, Artifactory, Helm</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/06/18/%E4%BD%BF%E7%94%A8GitLab%20CI%E5%92%8CDocker%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2SpringBoot%E5%BA%94%E7%94%A8/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">使用GitLab CI和Docker自动部署SpringBoot应用</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/05/29/%E5%BC%80%E5%8F%91%E8%80%85%E5%A6%82%E4%BD%95%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA%E6%9C%AC%E5%9C%B0-Kubernetes-%E9%9B%86%E7%BE%A4%EF%BC%9FMinikube%E8%B6%9F%E5%9D%91%E8%AE%B0%E5%BD%95/">
+                        <span class="hidden-mobile">开发者如何快速搭建本地 Kubernetes 集群？Minikube趟坑记录</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: 'article.markdown-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "5步实现规模化的Kubernetes CI/CD 流水线&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
